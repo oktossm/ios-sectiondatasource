@@ -1,0 +1,16 @@
+PODS:
+  - SectionDataSource (0.1.0)
+
+DEPENDENCIES:
+  - SectionDataSource (from `../`)
+
+EXTERNAL SOURCES:
+  SectionDataSource:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  SectionDataSource: 8cc749c0572e70f6b37b229d4e1c556ae65a21b0
+
+PODFILE CHECKSUM: 1cca3cc6288aa0cea4b98538b8ce0525e8687338
+
+COCOAPODS: 1.2.1
