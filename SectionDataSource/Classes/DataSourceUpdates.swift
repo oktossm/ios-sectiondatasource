@@ -45,16 +45,14 @@ public struct ArrayDiff {
 
         diffSteps.forEach {
             switch $0 {
-                case let .insert(val, index):
+                case let .insert(_, index):
                     i.append(index)
-                case let .delete(val, index):
+                case let .delete(_, index):
                     d.append(index)
-                case let .move(val, old, index):
+                case let .move(_, old, index):
                     m.append((old, index))
-                case let .update(val, index, old):
+                case let .update(_, index, old):
                     u.append((index, old))
-                default:
-                    break
             }
         }
 
@@ -86,7 +84,7 @@ public struct ArrayDiff {
 
     public func sortedDiff() -> SortedDiff {
         var insertions: [Int]    = self.inserts
-        var updates:    [Update] = self.updates
+        let updates:    [Update] = self.updates
         var indexedDeletions     = [Int: Int]()
 
         self.deletes.forEach { indexedDeletions[$0] = ($0) }
