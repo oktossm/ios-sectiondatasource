@@ -43,5 +43,5 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '3' }
   s.dependency 'ReactiveCocoa', '~> 5.0'
   s.dependency 'SortedArray'
-  s.dependency 'PHDiff'
+  s.dependency 'PaulHeckelDifference'
 end

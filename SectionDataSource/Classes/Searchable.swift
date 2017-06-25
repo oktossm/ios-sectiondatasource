@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import PHDiff
+import PaulHeckelDifference
 
 
 public protocol Searchable: Diffable {

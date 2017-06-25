@@ -5,7 +5,8 @@
 
 import Foundation
 import ReactiveSwift
-import PHDiff
+import PaulHeckelDifference
+import enum Result.NoError
 
 
 let SearchSection = "kSearchSection"

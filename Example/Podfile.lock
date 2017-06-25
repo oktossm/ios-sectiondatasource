@@ -1,5 +1,15 @@
 PODS:
-  - SectionDataSource (0.1.0)
+  - PaulHeckelDifference (1.0.7)
+  - ReactiveCocoa (5.0.4):
+    - ReactiveSwift (~> 1.1)
+  - ReactiveSwift (1.1.3):
+    - Result (~> 3.2)
+  - Result (3.2.3)
+  - SectionDataSource (0.1):
+    - PaulHeckelDifference
+    - ReactiveCocoa (~> 5.0)
+    - SortedArray
+  - SortedArray (0.1)
 
 DEPENDENCIES:
   - SectionDataSource (from `../`)
@@ -9,8 +19,13 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  SectionDataSource: 8cc749c0572e70f6b37b229d4e1c556ae65a21b0
+  PaulHeckelDifference: e5647c0f0bc72e7fcc03885d01a9088d485f3693
+  ReactiveCocoa: b31e754d15937811ede648fc83cd68f5de70a3d4
+  ReactiveSwift: f54ba12c2e799003432930fa55495315ae44f32b
+  Result: 128640a6347e8d2ae48b142556739a2d13f90ce6
+  SectionDataSource: c3a026550337fa86ac5f1a3a26b34cdde1d120cd
+  SortedArray: 79d239b01323db477446afa5d2103fbdf06b6050
 
-PODFILE CHECKSUM: 1cca3cc6288aa0cea4b98538b8ce0525e8687338
+PODFILE CHECKSUM: 58f2f161e981b70945a26ae4fe782c57d4f3797a
 
 COCOAPODS: 1.2.1

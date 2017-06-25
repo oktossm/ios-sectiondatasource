@@ -3,7 +3,7 @@
 // Copyright (c) 2016 Mikhail Mulyar. All rights reserved.
 //
 
-import PHDiff
+import PaulHeckelDifference
 
 
 public enum Direction {

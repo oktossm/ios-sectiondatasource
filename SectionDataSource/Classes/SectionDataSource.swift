@@ -4,8 +4,9 @@
 //
 
 import ReactiveSwift
-import PHDiff
-
+import PaulHeckelDifference
+import SortedArray
+import enum Result.NoError
 
 public enum SortType<Model:Diffable> {
     ///Sort function
@@ -85,7 +86,7 @@ public class SectionDataSource<Model:Searchable>: SectionDataSourceProtocol {
     var limit: Int? = 100 {
         didSet {
             workQueue.async {
-                let nestedDiff: NestedDiff = elapsedTime(self.filterOperation())
+                let nestedDiff: NestedDiff = self.filterOperation()
 
                 DispatchQueue.main.async {
                     self.contentChangesObserver.send(value: .updateSections(changes: nestedDiff))
@@ -190,7 +191,7 @@ public class SectionDataSource<Model:Searchable>: SectionDataSourceProtocol {
             isSearchingObserver.send(value: true)
 
             self.workQueue.async {
-                let found = query.isEmpty ? [Model]() : elapsedTime(self.searchObjects(query))
+                let found = query.isEmpty ? [Model]() : self.searchObjects(query)
 
                 let previouslyFound = self.foundObjects.array
                 self.foundObjects = SortedArray(sorted: found, areInIncreasingOrder: self.sortType.function)
@@ -636,6 +637,20 @@ extension SectionDataSource {
                 return list.filter { $0.pass(query) }
             case .function(let function):
                 return list.filter { function($0, query) }
+        }
+    }
+}
+
+
+//MARK: - Remove object
+
+
+extension RangeReplaceableCollection where Iterator.Element: Equatable {
+    
+    // Remove first collection element that is equal to the given `object`:
+    mutating func removeObject(_ object: Iterator.Element) {
+        if let index = self.index(of: object) {
+            self.remove(at: index)
         }
     }
 }
