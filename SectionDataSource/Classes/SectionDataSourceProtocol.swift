@@ -9,7 +9,7 @@ import PaulHeckelDifference
 import enum Result.NoError
 
 
-let SearchSection = "kSearchSection"
+public let SearchSection = "kSearchSection"
 
 
 public protocol SectionDataSourceProtocol {
@@ -19,8 +19,23 @@ public protocol SectionDataSourceProtocol {
     // MARK: - Input
     var searchString: MutableProperty<String?> { get }
 
+    var filterType: FilterType<Model>? { get set }
+
+    var searchLimit: Int? { get set }
+
+    var limitStep: Int { get set }
+
+    var limit: Int? { get set }
+
+    var searchInterval: TimeInterval { get set }
+
+    func loadMoreData()
+
     // MARK: - Output
-    var isSearching:  ReactiveSwift.Property<Bool> { get }
+
+    var hasMoreData: Bool { get }
+
+    var isSearching: ReactiveSwift.Property<Bool> { get }
 
     var contentChangesSignal: Signal<DataSourceUpdates, NoError> { get }
 
