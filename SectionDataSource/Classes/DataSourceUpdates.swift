@@ -5,12 +5,10 @@
 
 import PaulHeckelDifference
 
-
 public enum Direction {
     case up
     case down
 }
-
 
 public struct ArrayDiff {
 
@@ -19,7 +17,7 @@ public struct ArrayDiff {
 
     public let inserts: [Int]
     public let deletes: [Int]
-    public let moves:   [Move]
+    public let moves: [Move]
     public let updates: [Update]
 
     public init() {
@@ -36,7 +34,7 @@ public struct ArrayDiff {
         self.updates = updates
     }
 
-    public init<T:Diffable>(diffSteps: [DiffStep<T>]) {
+    public init<T>(diffSteps: [DiffStep<T>]) {
 
         var i = [Int]()
         var d = [Int]()
@@ -78,13 +76,12 @@ public struct ArrayDiff {
         return self.updates.map { IndexPath(row: $0.1, section: section) }
     }
 
-
     //Should be applied in order: deletions, insertions, updates
     public typealias SortedDiff = (deletions: [Int], insertions: [Int], updates: [Update])
 
     public func sortedDiff() -> SortedDiff {
         var insertions: [Int]    = self.inserts
-        let updates:    [Update] = self.updates
+        let updates: [Update] = self.updates
         var indexedDeletions     = [Int: Int]()
 
         self.deletes.forEach { indexedDeletions[$0] = ($0) }
@@ -103,24 +100,25 @@ public struct ArrayDiff {
     }
 }
 
-
 public protocol DiffSectionType: Diffable {
     associatedtype Item: Diffable
     var diffIdentifier: String { get }
-    var items:          [Item] { get }
+    var items: [Item] { get }
 }
 
-
-func ==<T:DiffSectionType>(lhs: T, rhs: T) -> Bool {
+func ==<T: DiffSectionType>(lhs: T, rhs: T) -> Bool {
     return false
 }
 
-
 public struct NestedDiff {
-    let sectionsDiffSteps: ArrayDiff
-    let itemsDiffSteps:    Array<ArrayDiff>
-}
+    public let sectionsDiffSteps: ArrayDiff
+    public let itemsDiffSteps: [ArrayDiff]
 
+    public init(sectionsDiffSteps: ArrayDiff, itemsDiffSteps: [ArrayDiff]) {
+        self.sectionsDiffSteps = sectionsDiffSteps
+        self.itemsDiffSteps = itemsDiffSteps
+    }
+}
 
 extension Array where Element: DiffSectionType {
 
@@ -152,7 +150,6 @@ extension Array where Element: DiffSectionType {
         return NestedDiff(sectionsDiffSteps: ArrayDiff(diffSteps: steps), itemsDiffSteps: itemsSteps)
     }
 }
-
 
 public enum DataSourceUpdates {
     case reload

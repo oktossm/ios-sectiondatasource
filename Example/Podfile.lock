@@ -5,7 +5,7 @@ PODS:
   - ReactiveSwift (1.1.3):
     - Result (~> 3.2)
   - Result (3.2.3)
-  - SectionDataSource (0.1):
+  - SectionDataSource (0.2):
     - PaulHeckelDifference
     - ReactiveCocoa (~> 5.0)
     - SortedArray
@@ -16,16 +16,16 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   SectionDataSource:
-    :path: "../"
+    :path: ../
 
 SPEC CHECKSUMS:
   PaulHeckelDifference: e5647c0f0bc72e7fcc03885d01a9088d485f3693
   ReactiveCocoa: b31e754d15937811ede648fc83cd68f5de70a3d4
   ReactiveSwift: f54ba12c2e799003432930fa55495315ae44f32b
   Result: 128640a6347e8d2ae48b142556739a2d13f90ce6
-  SectionDataSource: c3a026550337fa86ac5f1a3a26b34cdde1d120cd
+  SectionDataSource: 13724c0b539d735fc1264531d47a3ab4c31ca88c
   SortedArray: 79d239b01323db477446afa5d2103fbdf06b6050
 
 PODFILE CHECKSUM: 58f2f161e981b70945a26ae4fe782c57d4f3797a
 
-COCOAPODS: 1.2.1
+COCOAPODS: 1.3.1

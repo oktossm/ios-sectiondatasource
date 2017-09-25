@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'SectionDataSource'
-  s.version          = '0.2'
+  s.version          = '0.7'
   s.summary          = 'Data source for working with items which should be splited into sections'
 
 # This description is used to generate tags and improve search results.
@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
 
   s.description      = <<-DESC
   Data source implementation which helps working with splitting items to sections.
-  Supports filtering, searching and limiting.
+  Supports filtering, searching and limiting. Supports NSFetchedResultsController.
                        DESC
 
   s.homepage         = 'https://bitbucket.org/mmulyar/sectiondatasource'
