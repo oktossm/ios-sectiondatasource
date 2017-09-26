@@ -8,7 +8,7 @@ import ReactiveSwift
 import enum Result.NoError
 
 
-public class FetchedResultsDataSource<Model:NSManagedObject & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
+public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
 
     public var ignoreFetchedResultsChanges = false
     public var forceObjectUpdatesFromController = false
