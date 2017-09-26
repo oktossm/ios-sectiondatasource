@@ -132,9 +132,8 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
     fileprivate let changesSignal: Signal<DataSourceUpdates, NoError>
     fileprivate let searchSignal: Signal<DataSourceUpdates, NoError>
 
-    fileprivate let contentChangesObserver: Observer<DataSourceUpdates, NoError>
-    fileprivate let searchContentChangesObserver: Observer<DataSourceUpdates, NoError>
-
+    let contentChangesObserver: Observer<DataSourceUpdates, NoError>
+    let searchContentChangesObserver: Observer<DataSourceUpdates, NoError>
 
     fileprivate let sectionFunction: (Model) -> (String)
     fileprivate let sortType: SortType<Model>
