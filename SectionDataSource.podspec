@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   # s.frameworks = 'UIKit', 'MapKit'
   
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '3' }
-  s.dependency 'ReactiveCocoa', '~> 5.0'
+  s.dependency 'ReactiveSwift', '~> 1.0'
   s.dependency 'SortedArray'
   s.dependency 'PaulHeckelDifference'
 end
