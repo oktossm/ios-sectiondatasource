@@ -5,6 +5,7 @@
 import ReactiveSwift
 import enum Result.NoError
 
+
 public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
 
     public init(initialItems: [Model] = [Model](),
@@ -22,7 +23,7 @@ public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
                    async: async)
     }
 
-    public override var contentChangesSignal: Signal<DataSourceUpdates, Result.NoError> {
+    public override var contentChangesSignal: Signal<DataSourceUpdates, NoError> {
         return super.contentChangesSignal.map {
             updates in
 
@@ -38,7 +39,7 @@ public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
             }
         }
     }
-    public override var searchContentChangesSignal: Signal<DataSourceUpdates, Result.NoError> {
+    public override var searchContentChangesSignal: Signal<DataSourceUpdates, NoError> {
         return super.searchContentChangesSignal.map {
             updates in
 
@@ -53,5 +54,14 @@ public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
                     return updates
             }
         }
+    }
+
+    public func items() -> [Model] {
+
+        guard self.numberOfSections() > 0 else {
+            return [Model]()
+        }
+
+        return super.itemsInSection(0)
     }
 }
