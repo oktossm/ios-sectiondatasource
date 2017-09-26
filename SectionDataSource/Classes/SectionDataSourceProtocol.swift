@@ -42,7 +42,12 @@ public protocol SectionDataSourceProtocol {
     var searchContentChangesSignal: Signal<DataSourceUpdates, NoError> { get }
 
     // MARK: - Data source
+
+    func itemsInSection(_ section: Int) -> [Model]
+
     func itemAtIndexPath(_ path: IndexPath) -> Model
+
+    func indexPath(for item: Model) -> IndexPath?
 
     func numberOfItemsInSection(_ section: Int) -> Int
 
@@ -51,7 +56,12 @@ public protocol SectionDataSourceProtocol {
     func sectionIdForSection(_ section: Int) -> String
 
     // MARK: - Search Data source
+
+    func searchedItemsInSection(_ section: Int) -> [Model]
+
     func searchedItemAtIndexPath(_ path: IndexPath) -> Model
+
+    func searchedIndexPath(for item: Model) -> IndexPath?
 
     func searchedNumberOfItemsInSection(_ section: Int) -> Int
 

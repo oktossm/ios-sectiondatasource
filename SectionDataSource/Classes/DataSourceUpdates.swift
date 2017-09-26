@@ -5,10 +5,12 @@
 
 import PaulHeckelDifference
 
+
 public enum Direction {
     case up
     case down
 }
+
 
 public struct ArrayDiff {
 
@@ -69,20 +71,21 @@ public struct ArrayDiff {
     }
 
     public func movedPaths(in section: Int = 0) -> [(IndexPath, IndexPath)] {
-        return self.moves.map { (IndexPath(row: $0.0, section: section), IndexPath(row: $0.1, section: section)) }
+        return self.moves.map { (IndexPath(row: $0.fromIndex, section: section), IndexPath(row: $0.toIndex, section: section)) }
     }
 
     public func updatedPaths(in section: Int = 0) -> [IndexPath] {
-        return self.updates.map { IndexPath(row: $0.1, section: section) }
+        return self.updates.map { IndexPath(row: $0.oldIndex, section: section) }
     }
 
     //Should be applied in order: deletions, insertions, updates
     public typealias SortedDiff = (deletions: [Int], insertions: [Int], updates: [Update])
+    public typealias SortedPaths = (deletions: [IndexPath], insertions: [IndexPath], updates: [IndexPath])
 
     public func sortedDiff() -> SortedDiff {
-        var insertions: [Int]    = self.inserts
+        var insertions: [Int] = self.inserts
         let updates: [Update] = self.updates
-        var indexedDeletions     = [Int: Int]()
+        var indexedDeletions = [Int: Int]()
 
         self.deletes.forEach { indexedDeletions[$0] = ($0) }
         self.moves.forEach {
@@ -98,7 +101,17 @@ public struct ArrayDiff {
 
         return (deletions, insertions, updates)
     }
+
+    public func sortedPaths(in section: Int = 0) -> SortedPaths {
+        let sortedDiff = self.sortedDiff()
+        let deletions = sortedDiff.deletions.map { IndexPath(row: $0, section: section) }
+        let insertions = sortedDiff.insertions.map { IndexPath(row: $0, section: section) }
+        let updates = sortedDiff.updates.map { IndexPath(row: $0.oldIndex, section: section) }
+
+        return (deletions, insertions, updates)
+    }
 }
+
 
 public protocol DiffSectionType: Diffable {
     associatedtype Item: Diffable
@@ -110,6 +123,7 @@ func ==<T: DiffSectionType>(lhs: T, rhs: T) -> Bool {
     return false
 }
 
+
 public struct NestedDiff {
     public let sectionsDiffSteps: ArrayDiff
     public let itemsDiffSteps: [ArrayDiff]
@@ -119,6 +133,7 @@ public struct NestedDiff {
         self.itemsDiffSteps = itemsDiffSteps
     }
 }
+
 
 extension Array where Element: DiffSectionType {
 
@@ -150,6 +165,7 @@ extension Array where Element: DiffSectionType {
         return NestedDiff(sectionsDiffSteps: ArrayDiff(diffSteps: steps), itemsDiffSteps: itemsSteps)
     }
 }
+
 
 public enum DataSourceUpdates {
     case reload

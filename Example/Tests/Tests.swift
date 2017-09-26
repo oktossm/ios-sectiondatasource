@@ -38,7 +38,7 @@ func ==(lhs: TestModel, rhs: TestModel) -> Bool {
 
 final class Tests: XCTestCase {
 
-    var dataSource: SectionDataSource<TestModel>?
+    var linkedDataSource: SectionDataSource<TestModel>?
 
     static func unsortedDataSource(_ models: [TestModel]) -> SectionDataSource<TestModel> {
         return SimpleDataSource(initialItems: models,
@@ -301,6 +301,54 @@ final class Tests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
 
+    func testIndexPaths() {
+
+        let expectation = XCTestExpectation()
+
+        let dataSource = Tests.sectionedDataSource([TestModel(identifier: "a", value: "1"),
+                                                    TestModel(identifier: "b", value: "1"),
+                                                    TestModel(identifier: "c", value: "1"),
+                                                    TestModel(identifier: "d", value: "2"),
+                                                    TestModel(identifier: "e", value: "2"),
+                                                    TestModel(identifier: "f", value: "3")])
+
+        dataSource.contentChangesSignal.skip(first: 1).observeValues {
+            (updates: DataSourceUpdates) in
+
+            for section in 0..<dataSource.numberOfSections() {
+                let items = dataSource.itemsInSection(section)
+                for item in items {
+                    guard let indexPath = dataSource.indexPath(for: item) else {
+                        XCTAssertTrue(false)
+                        continue
+                    }
+                    let model = dataSource.itemAtIndexPath(indexPath)
+                    XCTAssertTrue(item.diffIdentifier == model.diffIdentifier)
+                }
+            }
+
+            expectation.fulfill()
+        }
+
+        dataSource.update(items: [TestModel(identifier: "a", value: "2"),
+                                  TestModel(identifier: "b", value: "1"),
+                                  TestModel(identifier: "c", value: "2"),
+                                  TestModel(identifier: "d", value: "1"),
+                                  TestModel(identifier: "e", value: "4"),
+                                  TestModel(identifier: "f", value: "4"),
+                                  TestModel(identifier: "g", value: "3"),
+                                  TestModel(identifier: "h", value: "3"),
+                                  TestModel(identifier: "i", value: "3"),
+                                  TestModel(identifier: "g", value: "4"),
+                                  TestModel(identifier: "k", value: "4"),
+                                  TestModel(identifier: "m", value: "2"),
+                                  TestModel(identifier: "n", value: "1"),
+                                  TestModel(identifier: "o", value: "1"),
+                                  TestModel(identifier: "p", value: "4"),
+                                  TestModel(identifier: "u", value: "4")])
+
+        wait(for: [expectation], timeout: 1)
+    }
 
     func testSyncUpdates() {
 
@@ -394,6 +442,37 @@ final class Tests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
 
+    func testIndexPathsRandom() {
+        let oldArray = randomArray(length: 1000).map { TestModel(identifier: $0, value: String(randomNumber(0..<20))) }
+        let newArray = randomArray(length: 1000).map { TestModel(identifier: $0, value: String(randomNumber(0..<20))) }
+
+        let expectation = XCTestExpectation()
+
+        let dataSource = Tests.unsortedDataSource(oldArray)
+
+        dataSource.contentChangesSignal.skip(first: 1).observeValues {
+            (updates: DataSourceUpdates) in
+
+            for section in 0..<dataSource.numberOfSections() {
+                let items = dataSource.itemsInSection(section)
+                for item in items {
+                    guard let indexPath = dataSource.indexPath(for: item) else {
+                        XCTAssertTrue(false)
+                        continue
+                    }
+                    let model = dataSource.itemAtIndexPath(indexPath)
+                    XCTAssertTrue(item.diffIdentifier == model.diffIdentifier)
+                }
+            }
+
+            expectation.fulfill()
+        }
+
+        dataSource.update(items: newArray)
+
+        self.wait(for: [expectation], timeout: 1)
+    }
+
     func testAsyncPerformance() {
         let oldArray = randomArray(length: 1000).map { TestModel(identifier: $0, value: String(randomNumber(0..<20))) }
         let newArray = randomArray(length: 1000).map { TestModel(identifier: $0, value: String(randomNumber(0..<20))) }
@@ -404,16 +483,16 @@ final class Tests: XCTestCase {
 
             self.startMeasuring()
 
-            self.dataSource = Tests.unsortedDataSource(oldArray)
+            self.linkedDataSource = Tests.unsortedDataSource(oldArray)
 
-            self.dataSource?.contentChangesSignal.skip(first: 1).observeValues {
+            self.linkedDataSource?.contentChangesSignal.skip(first: 1).observeValues {
                 (updates: DataSourceUpdates) in
 
                 self.stopMeasuring()
                 expectation.fulfill()
             }
 
-            self.dataSource?.update(items: newArray)
+            self.linkedDataSource?.update(items: newArray)
 
             self.wait(for: [expectation], timeout: 1)
         }
