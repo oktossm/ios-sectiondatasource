@@ -61,7 +61,7 @@ public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: 
 
     var backingController: NSFetchedResultsController<Model>
     var fetchedChangesSignal: Signal<Void, NoError>
-    var fetchedChangesObserver: Observer<Void, NoError>
+    var fetchedChangesObserver: Signal<Void, NoError>.Observer
     var itemsForForceUpdates = [Model]()
 
     public init(fetchRequest: NSFetchRequest<Model>,
