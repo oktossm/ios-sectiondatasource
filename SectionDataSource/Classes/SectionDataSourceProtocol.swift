@@ -5,7 +5,6 @@
 
 import Foundation
 import PaulHeckelDifference
-import enum Result.NoError
 
 
 public let SearchSection = "kSearchSection"

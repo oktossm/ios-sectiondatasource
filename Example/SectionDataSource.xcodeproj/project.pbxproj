@@ -193,16 +193,12 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-SectionDataSource_Tests/Pods-SectionDataSource_Tests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/PaulHeckelDifference/PaulHeckelDifference.framework",
-				"${BUILT_PRODUCTS_DIR}/ReactiveSwift/ReactiveSwift.framework",
-				"${BUILT_PRODUCTS_DIR}/Result/Result.framework",
 				"${BUILT_PRODUCTS_DIR}/SectionDataSource/SectionDataSource.framework",
 				"${BUILT_PRODUCTS_DIR}/SortedArray/SortedArray.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PaulHeckelDifference.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactiveSwift.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Result.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SectionDataSource.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SortedArray.framework",
 			);

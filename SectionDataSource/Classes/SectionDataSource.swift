@@ -19,7 +19,7 @@ public enum SortType<Model:Diffable> {
             case .function(let function):
                 return function
             case .unsorted:
-                return { _ in false }
+                return { (_, _) in false }
         }
     }
 }

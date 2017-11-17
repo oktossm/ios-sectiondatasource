@@ -2,8 +2,6 @@
 // Created by Mikhail Mulyar on 24/09/2017.
 //
 
-import ReactiveSwift
-
 
 public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
 
