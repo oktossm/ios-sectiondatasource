@@ -3,7 +3,6 @@
 //
 
 import ReactiveSwift
-import enum Result.NoError
 
 
 public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
@@ -23,37 +22,27 @@ public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
                    async: async)
     }
 
-    public override var contentChangesSignal: Signal<DataSourceUpdates, NoError> {
-        return super.contentChangesSignal.map {
-            updates in
-
-            switch updates {
-                case .updateSections(let changes):
-                    if let updates = changes.itemsDiffSteps.first {
-                        return DataSourceUpdates.update(changes: updates)
-                    } else {
-                        fallthrough
-                    }
-                default:
-                    return updates
-            }
+    func flatUpdates(updates: DataSourceUpdates) -> DataSourceUpdates {
+        switch updates {
+            case .initialSections(let changes):
+                if let updates = changes.itemsDiffSteps.first {
+                    return .initial(changes: updates)
+                } else {
+                    return .initial(changes: ArrayDiff(updates: [(0, 0)]))
+                }
+            case .updateSections(let changes):
+                if let updates = changes.itemsDiffSteps.first {
+                    return .update(changes: updates)
+                } else {
+                    return .update(changes: ArrayDiff(updates: [(0, 0)]))
+                }
+            default:
+                return .reload
         }
     }
-    public override var searchContentChangesSignal: Signal<DataSourceUpdates, NoError> {
-        return super.searchContentChangesSignal.map {
-            updates in
 
-            switch updates {
-                case .updateSections(let changes):
-                    if let updates = changes.itemsDiffSteps.first {
-                        return DataSourceUpdates.update(changes: updates)
-                    } else {
-                        fallthrough
-                    }
-                default:
-                    return updates
-            }
-        }
+    override func invokeDelegateUpdate(updates: DataSourceUpdates) {
+        super.invokeDelegateUpdate(updates: flatUpdates(updates: updates))
     }
 
     public func items() -> [Model] {

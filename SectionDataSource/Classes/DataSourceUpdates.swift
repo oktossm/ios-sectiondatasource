@@ -119,7 +119,8 @@ public protocol DiffSectionType: Diffable {
     var items: [Item] { get }
 }
 
-func ==<T: DiffSectionType>(lhs: T, rhs: T) -> Bool {
+
+func ==<T:DiffSectionType>(lhs: T, rhs: T) -> Bool {
     return false
 }
 
@@ -169,6 +170,8 @@ extension Array where Element: DiffSectionType {
 
 public enum DataSourceUpdates {
     case reload
+    case initial(changes: ArrayDiff)
+    case initialSections(changes: NestedDiff)
     case update(changes: ArrayDiff)
     case updateSections(changes: NestedDiff)
     case pagination(changes: ArrayDiff, direction: Direction)

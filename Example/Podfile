@@ -5,6 +5,5 @@ use_frameworks!
 
 target 'SectionDataSource_Tests' do
   pod 'SectionDataSource', :path => '../'
-  
-  
+                                   
 end

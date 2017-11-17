@@ -3,10 +3,10 @@
 // Copyright (c) 2016 Mikhail Mulyar. All rights reserved.
 //
 
-import ReactiveSwift
+import Foundation
+import Dispatch
 import PaulHeckelDifference
 import SortedArray
-import enum Result.NoError
 
 
 public enum SortType<Model:Diffable> {
@@ -74,54 +74,44 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
                              filteredPaths: [Int: IndexPath],
                              searchablePaths: [Int: IndexPath])
 
-    public var contentChangesSignal: Signal<DataSourceUpdates, NoError> {
-        return self.changesSignal
+    public var searchString: String? {
+        didSet {
+            self.lazySearch()
+        }
     }
-
-    public var searchContentChangesSignal: Signal<DataSourceUpdates, NoError> {
-        return self.searchSignal
-    }
-
-    public let searchString: MutableProperty<String?> = MutableProperty(nil)
-
-    public let isSearching: ReactiveSwift.Property<Bool>
 
     public var filterType: FilterType<Model>? {
-        get {
-            return self.filter.value
-        }
-        set {
-            self.filter.value = newValue
+        didSet {
+            self.lazyUpdate()
         }
     }
 
-    let filter: MutableProperty<FilterType<Model>?> = MutableProperty(nil)
+    public private(set) var isSearching: Bool = false {
+        didSet {
+            self.delegate?.didUpdateSearchState(isSearching: self.isSearching)
+        }
+    }
+
+    public var delegate: SectionDataSourceDelegate? = nil
 
     public var searchLimit: Int? = 50
 
     public var limitStep = 100
 
-    public var searchInterval: TimeInterval = 0.5
+    public var searchInterval: TimeInterval = 0.4 {
+        didSet {
+            self.lazySearch = {
+                return self.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
+                    [weak self] in
+                    self?.recalculateSearch(string: self?.searchString)
+                }
+            }()
+        }
+    }
 
     public var limit: Int? = nil {
         didSet {
-            let work = {
-                return self.updateLimit()
-            }
-
-            let completion = {
-                (updateState: UpdateState) in
-
-                self.update(from: updateState)
-
-                self.contentChangesObserver.send(value: .updateSections(changes: updateState.diff))
-
-                if self.isSearching.value {
-                    self.searchString.value = self.searchString.value
-                }
-            }
-
-            execute(work: work, completion: completion)
+            recalculate()
         }
     }
 
@@ -133,12 +123,19 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
         return count > limit && currentCount == limit
     }
 
+    fileprivate lazy var lazyUpdate: () -> Void = {
+        return self.debounce(delayBy: .milliseconds(100)) {
+            [weak self] in
+            self?.recalculate()
+        }
+    }()
 
-    fileprivate let changesSignal: Signal<DataSourceUpdates, NoError>
-    fileprivate let searchSignal: Signal<DataSourceUpdates, NoError>
-
-    let contentChangesObserver: Signal<DataSourceUpdates, NoError>.Observer
-    let searchContentChangesObserver: Signal<DataSourceUpdates, NoError>.Observer
+    fileprivate lazy var lazySearch: () -> Void = {
+        return self.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
+            [weak self] in
+            self?.recalculateSearch(string: self?.searchString)
+        }
+    }()
 
     fileprivate let sectionFunction: (Model) -> (String)
     fileprivate let sortType: SortType<Model>
@@ -183,76 +180,9 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
         self.sectionType = sectionType
         self.sectionFunction = sectionFunction
         self.searchType = searchType
-
-        let (signal, observer) = Signal<DataSourceUpdates, NoError>.pipe()
-
-        changesSignal = signal
-        contentChangesObserver = observer
-
-        let (sSignal, sObserver) = Signal<DataSourceUpdates, NoError>.pipe()
-
-        searchSignal = sSignal
-        searchContentChangesObserver = sObserver
-
-        let (isSearchingSignal, isSearchingObserver) = Signal<Bool, NoError>.pipe()
-
-        isSearching = ReactiveSwift.Property(initial: false, then: isSearchingSignal)
-
-
-        self.filter.value = filterType
+        self.filterType = filterType
 
         super.init()
-
-        self.filter.signal.throttle(0.1, on: QueueScheduler.main).observeValues {
-            [unowned self] filter in
-
-            self.limit = self.limit
-        }
-
-        self.searchString.signal.throttle(searchInterval, on: QueueScheduler.main).combinePrevious(self.searchString.value).observeValues {
-            [unowned self] (oldString, string) in
-
-            guard let query = string else {
-                self.foundObjects.removeAll();
-
-                if self.isSearching.value {
-                    isSearchingObserver.send(value: false)
-
-                    let diff = NestedDiff(sectionsDiffSteps: ArrayDiff(updates: [(0, 0)]), itemsDiffSteps: [])
-
-                    self.searchContentChangesObserver.send(value: .updateSections(changes: diff))
-                }
-                return
-            }
-
-            let alreadySearching = self.isSearching.value
-
-            isSearchingObserver.send(value: true)
-
-            let work = {
-                () -> NestedDiff in
-                let found = query.isEmpty ? [Model]() : self.searchObjects(query)
-
-                let previouslyFound = self.foundObjects.array
-                self.foundObjects = SortedArray(sorted: found, areInIncreasingOrder: self.sortType.function)
-
-                let diff: NestedDiff
-
-                if alreadySearching {
-                    let steps = found.difference(from: previouslyFound)
-                    diff = NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [ArrayDiff(diffSteps: steps)])
-                } else {
-                    diff = NestedDiff(sectionsDiffSteps: ArrayDiff(updates: [(0, 0)]), itemsDiffSteps: [])
-                }
-
-                return diff
-            }
-            let completion = {
-                diff in
-                self.searchContentChangesObserver.send(value: .updateSections(changes: diff))
-            }
-            self.execute(work: work, completion: completion)
-        }
 
         self.setupSections()
     }
@@ -269,6 +199,84 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
             let val: T = work()
             completion?(val)
         }
+    }
+
+    func debounce(delayBy: DispatchTimeInterval, queue: DispatchQueue = .main, _ function: @escaping (() -> Void)) -> () -> Void {
+        var currentWorkItem: DispatchWorkItem?
+        return {
+            currentWorkItem?.cancel()
+            currentWorkItem = DispatchWorkItem { function() }
+            queue.asyncAfter(deadline: .now() + delayBy, execute: currentWorkItem!)
+        }
+    }
+
+    func invokeDelegateUpdate(updates: DataSourceUpdates) {
+        self.delegate?.contentDidUpdate(updates: updates)
+    }
+
+    func invokeSearchDelegateUpdate(updates: DataSourceUpdates) {
+        self.delegate?.searchContentDidUpdate(updates: updates)
+    }
+
+    func recalculate() {
+        let work = {
+            return self.updateLimit()
+        }
+
+        let completion = {
+            (updateState: UpdateState) in
+
+            self.update(from: updateState)
+
+            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff))
+
+            if self.isSearching {
+                self.lazySearch()
+            }
+        }
+
+        execute(work: work, completion: completion)
+    }
+
+    func recalculateSearch(string: String?) {
+        guard let query = string else {
+            self.foundObjects.removeAll();
+
+            if self.isSearching {
+                self.isSearching = false
+
+                self.invokeSearchDelegateUpdate(updates: .reload)
+            }
+            return
+        }
+
+        let alreadySearching = self.isSearching
+
+        self.isSearching = true
+
+        let work = {
+            () -> DataSourceUpdates in
+            let found = query.isEmpty ? [Model]() : self.searchObjects(query)
+
+            let previouslyFound = self.foundObjects.array
+            self.foundObjects = SortedArray(sorted: found, areInIncreasingOrder: self.sortType.function)
+
+            let updates: DataSourceUpdates
+
+            if alreadySearching {
+                let steps = found.difference(from: previouslyFound)
+                updates = .update(changes: ArrayDiff(diffSteps: steps))
+            } else {
+                updates = .reload
+            }
+
+            return updates
+        }
+        let completion = {
+            (updates: DataSourceUpdates) -> Void in
+            self.invokeSearchDelegateUpdate(updates: updates)
+        }
+        self.execute(work: work, completion: completion)
     }
 
     func update(from updateState: UpdateState) {
@@ -300,7 +308,7 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
 
             let nestedDiff = NestedDiff(sectionsDiffSteps: ArrayDiff(inserts: insertions), itemsDiffSteps: [])
 
-            self.contentChangesObserver.send(value: .updateSections(changes: nestedDiff))
+            self.invokeDelegateUpdate(updates: .initialSections(changes: nestedDiff))
         }
 
         execute(work: work, completion: completion)
@@ -319,10 +327,10 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
 
             self.update(from: updateState)
 
-            self.contentChangesObserver.send(value: .updateSections(changes: updateState.diff))
+            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff))
 
-            if self.isSearching.value {
-                self.searchString.value = self.searchString.value
+            if self.isSearching {
+                self.lazySearch()
             }
         }
 
@@ -348,10 +356,10 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
 
             self.update(from: updateState)
 
-            self.contentChangesObserver.send(value: .updateSections(changes: updateState.diff))
+            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff))
 
-            if self.isSearching.value {
-                self.searchString.value = self.searchString.value
+            if self.isSearching {
+                self.lazySearch()
             }
         }
 
@@ -639,7 +647,7 @@ extension SectionDataSource {
     }
 
     func filterModel(_ unfiltered: Model) -> Bool {
-        guard let filter = self.filter.value else {
+        guard let filter = self.filterType else {
             return true
         }
 

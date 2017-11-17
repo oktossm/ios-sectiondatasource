@@ -4,8 +4,6 @@
 
 import Foundation
 import CoreData
-import ReactiveSwift
-import enum Result.NoError
 
 
 public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
@@ -60,8 +58,6 @@ public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: 
 
 
     var backingController: NSFetchedResultsController<Model>
-    var fetchedChangesSignal: Signal<Void, NoError>
-    var fetchedChangesObserver: Signal<Void, NoError>.Observer
     var itemsForForceUpdates = [Model]()
 
     public init(fetchRequest: NSFetchRequest<Model>,
@@ -76,8 +72,6 @@ public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: 
                                                             sectionNameKeyPath: nil,
                                                             cacheName: nil)
         try? self.backingController.performFetch()
-
-        (self.fetchedChangesSignal, self.fetchedChangesObserver) = Signal<Void, NoError>.pipe()
 
         super.init(initialItems: self.backingController.fetchedObjects ?? [Model](),
                    sortType: sortType,
@@ -115,7 +109,7 @@ public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: 
         if self.itemsForForceUpdates.isEmpty == false {
             let indexes = self.itemsForForceUpdates.flatMap { self.indexPath(for: $0)?.row }.map { ($0, $0) }
             let diff = ArrayDiff(inserts: [], deletes: [], moves: [], updates: indexes)
-            self.contentChangesObserver.send(value: .update(changes: diff))
+            self.invokeDelegateUpdate(updates: .update(changes: diff))
             self.itemsForForceUpdates.removeAll()
         }
 

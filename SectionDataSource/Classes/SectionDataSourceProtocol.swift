@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import ReactiveSwift
 import PaulHeckelDifference
 import enum Result.NoError
 
@@ -16,8 +15,10 @@ public protocol SectionDataSourceProtocol {
 
     associatedtype Model: Searchable
 
+
     // MARK: - Input
-    var searchString: MutableProperty<String?> { get }
+
+    var searchString: String? { get set }
 
     var filterType: FilterType<Model>? { get set }
 
@@ -31,15 +32,15 @@ public protocol SectionDataSourceProtocol {
 
     func loadMoreData()
 
-    // MARK: - Output
+
+    // MARK: - Properties
 
     var hasMoreData: Bool { get }
 
-    var isSearching: ReactiveSwift.Property<Bool> { get }
+    var isSearching: Bool { get }
 
-    var contentChangesSignal: Signal<DataSourceUpdates, NoError> { get }
+    var delegate: SectionDataSourceDelegate? { get set }
 
-    var searchContentChangesSignal: Signal<DataSourceUpdates, NoError> { get }
 
     // MARK: - Data source
 
@@ -54,6 +55,7 @@ public protocol SectionDataSourceProtocol {
     func numberOfSections() -> Int
 
     func sectionIdForSection(_ section: Int) -> String
+
 
     // MARK: - Search Data source
 
