@@ -3,7 +3,7 @@
 //
 
 
-public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
+public class SimpleDataSource<Model: Searchable>: SectionDataSource<Model> {
 
     public init(initialItems: [Model] = [Model](),
                 sortType: SortType<Model>,
@@ -22,20 +22,20 @@ public class SimpleDataSource<Model:Searchable>: SectionDataSource<Model> {
 
     func flatUpdates(updates: DataSourceUpdates) -> DataSourceUpdates {
         switch updates {
-            case .initialSections(let changes):
-                if let updates = changes.itemsDiffSteps.first {
-                    return .initial(changes: updates)
-                } else {
-                    return .initial(changes: ArrayDiff(updates: [(0, 0)]))
-                }
-            case .updateSections(let changes):
-                if let updates = changes.itemsDiffSteps.first {
-                    return .update(changes: updates)
-                } else {
-                    return .update(changes: ArrayDiff(updates: [(0, 0)]))
-                }
-            default:
-                return .reload
+        case .initialSections(let changes):
+            if let updates = changes.itemsDiffSteps.first {
+                return .initial(changes: updates)
+            } else {
+                return .initial(changes: ArrayDiff(updates: [(0, 0)]))
+            }
+        case .updateSections(let changes):
+            if let updates = changes.itemsDiffSteps.first {
+                return .update(changes: updates)
+            } else {
+                return .update(changes: ArrayDiff(updates: [(0, 0)]))
+            }
+        default:
+            return .reload
         }
     }
 

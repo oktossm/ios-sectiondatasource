@@ -6,7 +6,7 @@ import Foundation
 import CoreData
 
 
-public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
+public class FetchedResultsDataSource<Model: NSFetchRequestResult & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
 
     public var ignoreFetchedResultsChanges = false
     public var forceObjectUpdatesFromController = false
@@ -89,10 +89,10 @@ public class FetchedResultsDataSource<Model:NSFetchRequestResult & Searchable>: 
                            newIndexPath: IndexPath?) {
 
         switch type {
-            case .update:
-                (anObject as? Model).flatMap { self.itemsForForceUpdates.append($0) }
-            default:
-                break
+        case .update:
+            (anObject as? Model).flatMap { self.itemsForForceUpdates.append($0) }
+        default:
+            break
         }
     }
 

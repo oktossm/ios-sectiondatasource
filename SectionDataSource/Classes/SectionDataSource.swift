@@ -9,23 +9,23 @@ import PaulHeckelDifference
 import SortedArray
 
 
-public enum SortType<Model:Diffable> {
+public enum SortType<Model: Diffable> {
     ///Sort function
     case unsorted
     case function (function: (Model, Model) -> Bool)
 
     var function: (Model, Model) -> Bool {
         switch self {
-            case .function(let function):
-                return function
-            case .unsorted:
-                return { (_, _) in false }
+        case .function(let function):
+            return function
+        case .unsorted:
+            return { (_, _) in false }
         }
     }
 }
 
 
-public enum SearchType<Model:Searchable> {
+public enum SearchType<Model: Searchable> {
     ///Search using default method of protocol Searchable
     case searchable
     ///Search in memory using custom function
@@ -35,7 +35,7 @@ public enum SearchType<Model:Searchable> {
 }
 
 
-public enum FilterType<Model:Diffable> {
+public enum FilterType<Model: Diffable> {
     ///Filter in memory using models
     case function (function: (Model) -> Bool)
 }
@@ -63,7 +63,7 @@ public enum SectionType {
 }
 
 
-public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourceProtocol {
+public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourceProtocol {
 
     typealias UpdateState = (diff: NestedDiff,
                              identifiers: [String],
@@ -394,18 +394,18 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
         }
 
         switch sectionType {
-            case .prefilled:
-                break
-            case .sorting(let function):
-                newIdentifiers.sort(by: function)
+        case .prefilled:
+            break
+        case .sorting(let function):
+            newIdentifiers.sort(by: function)
         }
 
         for (index, identifier) in newIdentifiers.enumerated() {
             switch self.sortType {
-                case .unsorted:
-                    newSectionItems[identifier] = SortedArray(sorted: unsortedItems[index], areInIncreasingOrder: self.sortType.function)
-                case .function:
-                    newSectionItems[identifier] = SortedArray(unsorted: unsortedItems[index], areInIncreasingOrder: self.sortType.function)
+            case .unsorted:
+                newSectionItems[identifier] = SortedArray(sorted: unsortedItems[index], areInIncreasingOrder: self.sortType.function)
+            case .function:
+                newSectionItems[identifier] = SortedArray(unsorted: unsortedItems[index], areInIncreasingOrder: self.sortType.function)
             }
         }
 
@@ -447,12 +447,12 @@ public class SectionDataSource<Model:Searchable>: NSObject, SectionDataSourcePro
         let sectionDiff: ArrayDiff
 
         switch sectionType {
-            case .prefilled:
-                sectionDiff = ArrayDiff()
-            case .sorting:
-                newIdentifiers = newIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
-                let steps = newIdentifiers.difference(from: self.identifiers)
-                sectionDiff = ArrayDiff(diffSteps: steps)
+        case .prefilled:
+            sectionDiff = ArrayDiff()
+        case .sorting:
+            newIdentifiers = newIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
+            let steps = newIdentifiers.difference(from: self.identifiers)
+            sectionDiff = ArrayDiff(diffSteps: steps)
         }
 
         let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs)
@@ -639,10 +639,10 @@ extension SectionDataSource {
     func sorted(_ unsorted: [Model]) -> [Model] {
 
         switch self.sortType {
-            case .unsorted:
-                return unsorted
-            case .function(let function):
-                return unsorted.sorted(by: function)
+        case .unsorted:
+            return unsorted
+        case .function(let function):
+            return unsorted.sorted(by: function)
         }
     }
 
@@ -652,8 +652,8 @@ extension SectionDataSource {
         }
 
         switch filter {
-            case let .function(function):
-                return function(unfiltered)
+        case let .function(function):
+            return function(unfiltered)
         }
     }
 
@@ -662,10 +662,10 @@ extension SectionDataSource {
         let searchType: SearchType<Model> = self.searchType
 
         switch searchType {
-            case .searchable:
-                return list.filter { $0.pass(query) }
-            case .function(let function):
-                return list.filter { function($0, query) }
+        case .searchable:
+            return list.filter { $0.pass(query) }
+        case .function(let function):
+            return list.filter { function($0, query) }
         }
     }
 }

@@ -22,6 +22,10 @@ public struct ArrayDiff {
     public let moves: [Move]
     public let updates: [Update]
 
+    public var isEmpty: Bool {
+        return inserts.isEmpty && deletes.isEmpty && updates.isEmpty && moves.isEmpty
+    }
+
     public init() {
         self.inserts = [Int]()
         self.deletes = [Int]()
@@ -45,14 +49,14 @@ public struct ArrayDiff {
 
         diffSteps.forEach {
             switch $0 {
-                case let .insert(_, index):
-                    i.append(index)
-                case let .delete(_, index):
-                    d.append(index)
-                case let .move(_, old, index):
-                    m.append((old, index))
-                case let .update(_, index, old):
-                    u.append((index, old))
+            case let .insert(_, index):
+                i.append(index)
+            case let .delete(_, index):
+                d.append(index)
+            case let .move(_, old, index):
+                m.append((old, index))
+            case let .update(_, index, old):
+                u.append((index, old))
             }
         }
 
@@ -120,7 +124,7 @@ public protocol DiffSectionType: Diffable {
 }
 
 
-func ==<T:DiffSectionType>(lhs: T, rhs: T) -> Bool {
+func ==<T: DiffSectionType>(lhs: T, rhs: T) -> Bool {
     return false
 }
 
@@ -146,20 +150,20 @@ extension Array where Element: DiffSectionType {
         let steps = self.difference(from: array).flatMap {
             (step: DiffStep<Element>) -> DiffStep<Element>? in
             switch step {
-                case let .move(section, old, index):
-                    let old = array[old]
+            case let .move(section, old, index):
+                let old = array[old]
 
-                    let diff: [DiffStep<Element.Item>] = section.items.difference(from: old.items)
-                    itemsSteps[index] = ArrayDiff(diffSteps: diff)
-                    return step
-                case let .update(section, index, old):
-                    let old = array[old]
+                let diff: [DiffStep<Element.Item>] = section.items.difference(from: old.items)
+                itemsSteps[index] = ArrayDiff(diffSteps: diff)
+                return step
+            case let .update(section, index, old):
+                let old = array[old]
 
-                    let diff: [DiffStep<Element.Item>] = section.items.difference(from: old.items)
-                    itemsSteps[index] = ArrayDiff(diffSteps: diff)
-                    return nil
-                default:
-                    return step
+                let diff: [DiffStep<Element.Item>] = section.items.difference(from: old.items)
+                itemsSteps[index] = ArrayDiff(diffSteps: diff)
+                return nil
+            default:
+                return step
             }
         }
 
@@ -176,4 +180,95 @@ public enum DataSourceUpdates {
     case updateSections(changes: NestedDiff)
     case pagination(changes: ArrayDiff, direction: Direction)
     case countReduction(changes: ArrayDiff, direction: Direction)
+}
+
+
+//MARK: - UIKit
+extension ArrayDiff {
+    func update(tableView: UITableView, animations: UITableViewRowAnimation = .fade, performReloads: Bool = true) {
+        let sorted = self.sortedPaths()
+
+        if sorted.deletions.isEmpty == false {
+            tableView.deleteRows(at: sorted.deletions, with: animations)
+        }
+        if sorted.insertions.isEmpty == false {
+            tableView.insertRows(at: sorted.insertions, with: animations)
+        }
+        if sorted.updates.isEmpty == false, performReloads == true {
+            tableView.reloadRows(at: sorted.updates, with: animations)
+        }
+    }
+
+    func update(collectionView: UICollectionView, performReloads: Bool = true) {
+        let sorted = self.sortedPaths()
+
+        if sorted.deletions.isEmpty == false {
+            collectionView.deleteItems(at: sorted.deletions)
+        }
+        if sorted.insertions.isEmpty == false {
+            collectionView.insertItems(at: sorted.insertions)
+        }
+        if sorted.updates.isEmpty == false, performReloads == true {
+            collectionView.reloadItems(at: sorted.updates)
+        }
+    }
+}
+
+
+extension NestedDiff {
+    func update(tableView: UITableView, animations: UITableViewRowAnimation = .fade, performReloads: Bool = true) {
+        let sorted = self.sectionsDiffSteps.sortedDiff()
+
+        if sorted.deletions.isEmpty == false {
+            tableView.deleteSections(IndexSet(sorted.deletions), with: animations)
+        }
+        if sorted.insertions.isEmpty == false {
+            tableView.insertSections(IndexSet(sorted.insertions), with: animations)
+        }
+        if sorted.updates.isEmpty == false {
+            tableView.reloadSections(IndexSet(sorted.updates.map { $0.oldIndex }), with: animations)
+        }
+
+        for (index, diff) in self.itemsDiffSteps.filter({ !$0.isEmpty }).enumerated() {
+            let sorted = diff.sortedPaths(in: index)
+
+            if sorted.deletions.isEmpty == false {
+                tableView.deleteRows(at: sorted.deletions, with: animations)
+            }
+            if sorted.insertions.isEmpty == false {
+                tableView.insertRows(at: sorted.insertions, with: animations)
+            }
+            if sorted.updates.isEmpty == false, performReloads == true {
+                tableView.reloadRows(at: sorted.updates, with: animations)
+            }
+        }
+    }
+
+    func update(collectionView: UICollectionView, performReloads: Bool = true) {
+        let sorted = self.sectionsDiffSteps.sortedDiff()
+
+        if sorted.deletions.isEmpty == false {
+            collectionView.deleteSections(IndexSet(sorted.deletions))
+        }
+        if sorted.insertions.isEmpty == false {
+            collectionView.insertSections(IndexSet(sorted.insertions))
+        }
+        if sorted.updates.isEmpty == false {
+            collectionView.reloadSections(IndexSet(sorted.updates.map { $0.oldIndex }))
+        }
+
+        for (index, diff) in self.itemsDiffSteps.filter({ !$0.isEmpty }).enumerated() {
+            let sorted = diff.sortedPaths(in: index)
+
+            if sorted.deletions.isEmpty == false {
+                collectionView.deleteItems(at: sorted.deletions)
+            }
+            if sorted.insertions.isEmpty == false {
+                collectionView.insertItems(at: sorted.insertions)
+            }
+            if sorted.updates.isEmpty == false, performReloads == true {
+                collectionView.reloadItems(at: sorted.updates)
+            }
+        }
+    }
 }

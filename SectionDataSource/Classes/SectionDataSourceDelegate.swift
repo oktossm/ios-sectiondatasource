@@ -12,4 +12,4 @@ public protocol SectionDataSourceDelegate {
     func searchContentDidUpdate(updates: DataSourceUpdates)
 
     func didUpdateSearchState(isSearching: Bool)
-    }
+}
