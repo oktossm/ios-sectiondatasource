@@ -159,7 +159,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
     fileprivate let async: Bool
 
-    fileprivate let workQueue = DispatchQueue(label: "com.dreambits.messenger.dataSourceWorkQueue.\(Int(arc4random_uniform(10)))",
+    fileprivate let workQueue = DispatchQueue(label: "mm.sectionDataSource.dataSourceWorkQueue.\(Int(arc4random_uniform(10)))",
                                               qos: .utility)
 
 
