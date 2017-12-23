@@ -5,7 +5,7 @@
 import PaulHeckelDifference
 
 
-public protocol SectionDataSourceDelegate {
+public protocol SectionDataSourceDelegate: class {
 
     func contentDidUpdate(updates: DataSourceUpdates)
 

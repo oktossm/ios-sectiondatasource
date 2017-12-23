@@ -92,7 +92,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
     }
 
-    public var delegate: SectionDataSourceDelegate? = nil
+    public weak var delegate: SectionDataSourceDelegate? = nil
 
     public var searchLimit: Int? = 50
 
