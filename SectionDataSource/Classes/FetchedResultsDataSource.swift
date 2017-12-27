@@ -109,7 +109,7 @@ public class FetchedResultsDataSource<Model: NSFetchRequestResult & Searchable>:
         if self.itemsForForceUpdates.isEmpty == false {
             let indexes = self.itemsForForceUpdates.flatMap { self.indexPath(for: $0)?.row }.map { ($0, $0) }
             let diff = ArrayDiff(inserts: [], deletes: [], moves: [], updates: indexes)
-            self.invokeDelegateUpdate(updates: .update(changes: diff))
+            self.invokeDelegateUpdate(updates: .updateSections(changes: NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [diff])))
             self.itemsForForceUpdates.removeAll()
         }
 
