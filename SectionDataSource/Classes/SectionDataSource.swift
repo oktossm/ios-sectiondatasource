@@ -270,7 +270,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
             let updates: DataSourceUpdates
 
             if alreadySearching {
-                let steps = found.difference(from: previouslyFound)
+                let steps = self.foundObjects.array.difference(from: previouslyFound)
                 updates = .update(changes: ArrayDiff(diffSteps: steps))
             } else {
                 updates = .reload
@@ -441,13 +441,14 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
                 }
             }
 
+            let sorted = SortedArray(sorted: filtered, areInIncreasingOrder: self.sortType.function)
+            newFilteredItems[identifier] = sorted
+            newSearchableItems[identifier] = SortedArray(sorted: searchable, areInIncreasingOrder: self.sortType.function)
+
             if let old = self.filteredSectionedItems[identifier] {
-                let steps = filtered.difference(from: old.array)
+                let steps = sorted.array.difference(from: old.array)
                 itemDiffs[index] = ArrayDiff(diffSteps: steps)
             }
-
-            newFilteredItems[identifier] = SortedArray(sorted: filtered, areInIncreasingOrder: self.sortType.function)
-            newSearchableItems[identifier] = SortedArray(sorted: searchable, areInIncreasingOrder: self.sortType.function)
         }
 
         let sectionDiff: ArrayDiff
@@ -507,10 +508,11 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
                 }
             })
 
-            let steps = filtered.difference(from: oldModels.array)
-
-            newFilteredItems[identifier] = SortedArray(sorted: filtered, areInIncreasingOrder: self.sortType.function)
+            let sorted = SortedArray(sorted: filtered, areInIncreasingOrder: self.sortType.function)
+            newFilteredItems[identifier] = sorted
             newSearchableItems[identifier] = SortedArray(sorted: searchable, areInIncreasingOrder: self.sortType.function)
+
+            let steps = sorted.array.difference(from: oldModels.array)
 
             itemDiffs[self.identifiers.index(of: identifier)!] = ArrayDiff(diffSteps: steps)
         }
