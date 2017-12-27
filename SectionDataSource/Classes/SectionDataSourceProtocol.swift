@@ -21,6 +21,8 @@ public protocol SectionDataSourceProtocol {
 
     var filterType: FilterType<Model>? { get set }
 
+    var sortType: SortType<Model> { get set }
+
     var searchLimit: Int? { get set }
 
     var limitStep: Int { get set }

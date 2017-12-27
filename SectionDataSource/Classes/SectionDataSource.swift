@@ -86,6 +86,13 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
     }
 
+    public var sortType: SortType<Model> {
+        didSet {
+            self.lazyUpdate()
+        }
+    }
+
+
     public private(set) var isSearching: Bool = false {
         didSet {
             self.delegate?.didUpdateSearchState(isSearching: self.isSearching)
@@ -138,7 +145,6 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
     }()
 
     fileprivate let sectionFunction: (Model) -> (String)
-    fileprivate let sortType: SortType<Model>
     fileprivate let searchType: SearchType<Model>
     fileprivate let sectionType: SectionType
 
