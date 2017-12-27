@@ -88,7 +88,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
     public var sortType: SortType<Model> {
         didSet {
-            self.lazyUpdate()
+            self.lazySortUpdate()
         }
     }
 
@@ -108,7 +108,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
     public var searchInterval: TimeInterval = 0.4 {
         didSet {
             self.lazySearch = {
-                return self.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
+                return SectionDataSource.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
                     [weak self] in
                     self?.recalculateSearch(string: self?.searchString)
                 }
@@ -131,14 +131,21 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
     }
 
     fileprivate lazy var lazyUpdate: () -> Void = {
-        return self.debounce(delayBy: .milliseconds(100)) {
+        return SectionDataSource.debounce(delayBy: .milliseconds(100)) {
             [weak self] in
             self?.recalculate()
         }
     }()
 
+    fileprivate lazy var lazySortUpdate: () -> Void = {
+        return SectionDataSource.debounce(delayBy: .milliseconds(100)) {
+            [weak self] in
+            self?.recalculate(updateSorting: true)
+        }
+    }()
+
     fileprivate lazy var lazySearch: () -> Void = {
-        return self.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
+        return SectionDataSource.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
             [weak self] in
             self?.recalculateSearch(string: self?.searchString)
         }
@@ -207,7 +214,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
     }
 
-    func debounce(delayBy: DispatchTimeInterval, queue: DispatchQueue = .main, _ function: @escaping (() -> Void)) -> () -> Void {
+    class func debounce(delayBy: DispatchTimeInterval, queue: DispatchQueue = .main, _ function: @escaping (() -> Void)) -> () -> Void {
         var currentWorkItem: DispatchWorkItem?
         return {
             currentWorkItem?.cancel()
@@ -224,9 +231,9 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         self.delegate?.searchContentDidUpdate(updates: updates)
     }
 
-    func recalculate() {
+    func recalculate(updateSorting: Bool = false) {
         let work = {
-            return self.updateLimit()
+            return self.updateLimit(updateSorting: updateSorting)
         }
 
         let completion = {
@@ -471,7 +478,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         self.limit = (self.limit ?? 0) + self.limitStep
     }
 
-    func updateLimit() -> UpdateState {
+    func updateLimit(updateSorting: Bool = false) -> UpdateState {
 
         let sectionDiff = ArrayDiff()
 
@@ -508,9 +515,18 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
                 }
             })
 
-            let sorted = SortedArray(sorted: filtered, areInIncreasingOrder: self.sortType.function)
+            let sorted: SortedArray<Model>
+            let searchableSorted: SortedArray<Model>
+            if updateSorting {
+                sorted = SortedArray(unsorted: filtered, areInIncreasingOrder: self.sortType.function)
+                searchableSorted = SortedArray(unsorted: searchable, areInIncreasingOrder: self.sortType.function)
+            } else {
+                sorted = SortedArray(sorted: filtered, areInIncreasingOrder: self.sortType.function)
+                searchableSorted = SortedArray(sorted: searchable, areInIncreasingOrder: self.sortType.function)
+            }
+
             newFilteredItems[identifier] = sorted
-            newSearchableItems[identifier] = SortedArray(sorted: searchable, areInIncreasingOrder: self.sortType.function)
+            newSearchableItems[identifier] = searchableSorted
 
             let steps = sorted.array.difference(from: oldModels.array)
 

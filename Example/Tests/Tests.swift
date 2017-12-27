@@ -35,7 +35,7 @@ func ==(lhs: TestModel, rhs: TestModel) -> Bool {
 }
 
 
-final class MockedSimpleDataSource<Model:Searchable>: SimpleDataSource<Model> {
+final class MockedSimpleDataSource<Model: Searchable>: SimpleDataSource<Model> {
 
     var contentExpectationBlock: ((DataSourceUpdates) -> Void)?
     var searchContentExpectationBlock: ((DataSourceUpdates) -> Void)?
@@ -50,7 +50,7 @@ final class MockedSimpleDataSource<Model:Searchable>: SimpleDataSource<Model> {
 }
 
 
-final class MockedSectionDataSource<Model:Searchable>: SectionDataSource<Model> {
+final class MockedSectionDataSource<Model: Searchable>: SectionDataSource<Model> {
 
     var contentExpectationBlock: ((DataSourceUpdates) -> Void)?
     var searchContentExpectationBlock: ((DataSourceUpdates) -> Void)?
@@ -242,6 +242,71 @@ final class Tests: XCTestCase {
         dataSource.update(items: [TestModel(identifier: "b", value: "1"),
                                   TestModel(identifier: "c", value: "1"),
                                   TestModel(identifier: "a", value: "1")])
+
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func testFilter() {
+
+        let expectation = XCTestExpectation()
+
+        linkedDataSource = Tests.unsortedDataSource([TestModel(identifier: "a", value: "1"),
+                                                     TestModel(identifier: "b", value: "2"),
+                                                     TestModel(identifier: "c", value: "1")])
+
+        linkedDataSource?.contentExpectationBlock = {
+            [weak self] updates in
+
+            if case .initial = updates {
+                self?.linkedDataSource?.filterType = .function {
+                    model in
+                    return model.value == "1"
+                }
+                return
+            }
+
+            guard case .update(let changes) = updates,
+                  changes.deletes.count == 1,
+                  changes.deletes.first == 1
+                    else {
+                XCTAssertTrue(false, "\(updates)")
+                return
+            }
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func testSorting() {
+
+        let expectation = XCTestExpectation()
+
+        linkedDataSource = Tests.unsortedDataSource([TestModel(identifier: "a", value: "1"),
+                                                     TestModel(identifier: "b", value: "2"),
+                                                     TestModel(identifier: "c", value: "1")])
+
+        linkedDataSource?.contentExpectationBlock = {
+            [weak self] updates in
+
+            if case .initial = updates {
+                self?.linkedDataSource?.sortType = .function {
+                    m1, m2 in
+                    return (Int(m1.value) ?? 0) < (Int(m2.value) ?? 0)
+                }
+                return
+            }
+
+            guard case .update(let changes) = updates,
+                  changes.moves.count == 1,
+                  let move = changes.moves.first,
+                  (move.fromIndex == 2 && move.toIndex == 1) || (move.fromIndex == 1 && move.toIndex == 2)
+                    else {
+                XCTAssertTrue(false, "\(updates)")
+                return
+            }
+            expectation.fulfill()
+        }
 
         wait(for: [expectation], timeout: 1)
     }

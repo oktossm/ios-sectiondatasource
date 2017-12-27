@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'SectionDataSource'
-  s.version          = '0.9.8'
+  s.version          = '0.9.8.1'
   s.summary          = 'Data source for working with items which should be splited into sections'
 
 # This description is used to generate tags and improve search results.
@@ -41,6 +41,6 @@ Pod::Spec.new do |s|
   # s.frameworks = 'UIKit', 'MapKit'
   
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4' }
-  s.dependency 'SortedArray'
+  s.dependency 'SortedArray', ~> '0.1.1'
   s.dependency 'PaulHeckelDifference'
 end
