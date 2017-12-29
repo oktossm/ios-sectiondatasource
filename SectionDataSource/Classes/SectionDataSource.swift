@@ -233,7 +233,12 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
     func recalculate(updateSorting: Bool = false) {
         let work = {
-            return self.updateLimit(updateSorting: updateSorting)
+            () -> UpdateState in
+            if updateSorting && self.limit != nil {
+                return self.update(for: self.models)
+            } else {
+                return self.updateLimit(updateSorting: updateSorting)
+            }
         }
 
         let completion = {

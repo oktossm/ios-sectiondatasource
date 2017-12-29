@@ -231,7 +231,7 @@ final class Tests: XCTestCase {
             if case .initial = updates { return }
 
             guard case .update(let changes) = updates,
-                  changes.moves.count == 2
+                  changes.moves.count == 3
                     else {
                 XCTAssertTrue(false, "\(updates)")
                 return
@@ -298,7 +298,7 @@ final class Tests: XCTestCase {
             }
 
             guard case .update(let changes) = updates,
-                  changes.moves.count == 1,
+                  changes.moves.count == 2,
                   let move = changes.moves.first,
                   (move.fromIndex == 2 && move.toIndex == 1) || (move.fromIndex == 1 && move.toIndex == 2)
                     else {
@@ -327,7 +327,7 @@ final class Tests: XCTestCase {
             XCTAssertTrue(Thread.isMainThread)
 
             guard case .update(let changes) = updates,
-                  changes.moves.filter({ $0.fromIndex != $0.toIndex }).count == 1,
+                  changes.moves.filter({ $0.fromIndex != $0.toIndex }).count == 2,
                   changes.updates.count == 1,
                   changes.updates.first?.oldIndex == 1,
                   changes.updates.first?.newIndex == 0,
