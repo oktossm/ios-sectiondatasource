@@ -95,7 +95,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
     public private(set) var isSearching: Bool = false {
         didSet {
-            self.delegate?.didUpdateSearchState(isSearching: self.isSearching)
+            self.delegate?.dataSource(self, didUpdateSearchState: isSearching)
         }
     }
 
@@ -224,11 +224,11 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
     }
 
     func invokeDelegateUpdate(updates: DataSourceUpdates) {
-        self.delegate?.contentDidUpdate(updates: updates)
+        self.delegate?.dataSource(self, didUpdateContent: updates)
     }
 
     func invokeSearchDelegateUpdate(updates: DataSourceUpdates) {
-        self.delegate?.searchContentDidUpdate(updates: updates)
+        self.delegate?.dataSource(self, didUpdateSearchContent: updates)
     }
 
     func recalculate(updateSorting: Bool = false) {

@@ -6,10 +6,7 @@ import PaulHeckelDifference
 
 
 public protocol SectionDataSourceDelegate: class {
-
-    func contentDidUpdate(updates: DataSourceUpdates)
-
-    func searchContentDidUpdate(updates: DataSourceUpdates)
-
-    func didUpdateSearchState(isSearching: Bool)
+    func dataSource<T: Searchable>(_ dataSource: SectionDataSource<T>, didUpdateContent updates: DataSourceUpdates)
+    func dataSource<T: Searchable>(_ dataSource: SectionDataSource<T>, didUpdateSearchContent updates: DataSourceUpdates)
+    func dataSource<T: Searchable>(_ dataSource: SectionDataSource<T>, didUpdateSearchState isSearching: Bool)
 }

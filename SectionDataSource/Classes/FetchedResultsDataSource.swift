@@ -90,7 +90,7 @@ public class FetchedResultsDataSource<Model: NSFetchRequestResult & Searchable>:
 
         switch type {
         case .update:
-            (anObject as? Model).flatMap { self.itemsForForceUpdates.append($0) }
+            if let object = anObject as? Model { self.itemsForForceUpdates.append(object) }
         default:
             break
         }
@@ -107,7 +107,7 @@ public class FetchedResultsDataSource<Model: NSFetchRequestResult & Searchable>:
         }
 
         if self.itemsForForceUpdates.isEmpty == false {
-            let indexes = self.itemsForForceUpdates.flatMap { self.indexPath(for: $0)?.row }.map { ($0, $0) }
+            let indexes = self.itemsForForceUpdates.compactMap { self.indexPath(for: $0)?.row }.map { ($0, $0) }
             let diff = ArrayDiff(inserts: [], deletes: [], moves: [], updates: indexes)
             self.invokeDelegateUpdate(updates: .updateSections(changes: NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [diff])))
             self.itemsForForceUpdates.removeAll()
