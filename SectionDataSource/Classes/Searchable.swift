@@ -15,7 +15,7 @@ public protocol Searchable: Diffable {
 
 extension Searchable {
 
-    func pass(_ query: String) -> Bool {
+    public func pass(_ query: String) -> Bool {
         return false
     }
 }
