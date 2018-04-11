@@ -36,6 +36,8 @@ public protocol SectionDataSourceProtocol {
 
     // MARK: - Properties
 
+    var allItems: [Model] { get }
+
     var hasMoreData: Bool { get }
 
     var isSearching: Bool { get }

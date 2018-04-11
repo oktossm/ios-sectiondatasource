@@ -92,6 +92,9 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
     }
 
+    public var allItems: [Model] {
+        return self.models
+    }
 
     public private(set) var isSearching: Bool = false {
         didSet {
