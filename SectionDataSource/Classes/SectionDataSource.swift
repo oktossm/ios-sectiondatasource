@@ -358,6 +358,12 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         self.execute(work: work, completion: completion)
     }
 
+    public func add(item: Model) {
+        var newModels = self.models
+        newModels.append(item)
+        self.update(items: newModels)
+    }
+
     public func update(with diff: [DiffStep<Model>]) {
 
         let work: () -> UpdateState? = {

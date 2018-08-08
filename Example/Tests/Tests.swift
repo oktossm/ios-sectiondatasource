@@ -26,12 +26,8 @@ struct TestModel: Searchable, CustomDebugStringConvertible {
 }
 
 
-extension TestModel: Equatable {
-}
-
-
 func ==(lhs: TestModel, rhs: TestModel) -> Bool {
-    return lhs.value == rhs.value
+    return lhs.value == rhs.value && lhs.identifier == rhs.identifier
 }
 
 
