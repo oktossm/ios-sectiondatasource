@@ -26,13 +26,13 @@ public class SimpleDataSource<Model: Searchable>: SectionDataSource<Model> {
             if let updates = changes.itemsDiffSteps.first {
                 return .initial(changes: updates)
             } else {
-                return .initial(changes: ArrayDiff(updates: [(0, 0)]))
+                return .initial(changes: ArrayDiff(updates: []))
             }
         case .updateSections(let changes):
             if let updates = changes.itemsDiffSteps.first {
                 return .update(changes: updates)
             } else {
-                return .update(changes: ArrayDiff(updates: [(0, 0)]))
+                return .update(changes: ArrayDiff(updates: []))
             }
         default:
             return .reload
