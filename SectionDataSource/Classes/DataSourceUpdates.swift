@@ -147,7 +147,7 @@ extension Array where Element: DiffSectionType {
         var itemsSteps: [ArrayDiff] = []
         self.forEach { _ in itemsSteps.append(ArrayDiff()) }
 
-        let steps = self.difference(from: array).flatMap {
+        let steps = self.difference(from: array).compactMap {
             (step: DiffStep<Element>) -> DiffStep<Element>? in
             switch step {
             case let .move(section, old, index):

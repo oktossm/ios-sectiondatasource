@@ -1,22 +1,27 @@
 PODS:
   - PaulHeckelDifference (1.0.9)
-  - SectionDataSource (0.9.8.1):
+  - SectionDataSource (0.9.9):
     - PaulHeckelDifference
-    - SortedArray (~> 0.1.1)
-  - SortedArray (0.1.1)
+    - SortedArray (~> 0.2)
+  - SortedArray (0.2)
 
 DEPENDENCIES:
   - SectionDataSource (from `../`)
 
+SPEC REPOS:
+  "git@bitbucket.org:mmulyar/mmpods.git":
+    - PaulHeckelDifference
+    - SortedArray
+
 EXTERNAL SOURCES:
   SectionDataSource:
-    :path: ../
+    :path: "../"
 
 SPEC CHECKSUMS:
   PaulHeckelDifference: c0a3b870c4514ac8a42791df921864b04495db04
-  SectionDataSource: ae90cf8fea62e373604acf233c211a203823921a
-  SortedArray: 7e0950a5c00fc5d5477fb6edab92957482495332
+  SectionDataSource: 5d3db240d375fce0dc1ac7e6a213b6d5d79116e3
+  SortedArray: 06a50b40e96093efc9f361187b2f0fa7f5e9897f
 
 PODFILE CHECKSUM: 793967a1a54bb2896468d4efd7aff48399c91e69
 
-COCOAPODS: 1.4.0.rc.1
+COCOAPODS: 1.5.3
