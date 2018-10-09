@@ -63,7 +63,7 @@ public enum SectionType {
 }
 
 
-public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourceProtocol {
+public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionDataSourceProtocol {
 
     typealias UpdateState = (diff: NestedDiff,
                              identifiers: [String],
@@ -102,7 +102,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
     }
 
-    public weak var delegate: SectionDataSourceDelegate? = nil
+    public weak var delegate: SectionDataSourceDelegate?
 
     public var searchLimit: Int? = 50
 
@@ -132,6 +132,8 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
         return count > limit && currentCount == limit
     }
+
+    public internal (set) var operationIndex: OperationIndex = 0
 
     fileprivate lazy var lazyUpdate: () -> Void = {
         return SectionDataSource.debounce(delayBy: .milliseconds(100)) {
@@ -175,9 +177,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
     fileprivate let async: Bool
 
-    fileprivate let workQueue = DispatchQueue(label: "mm.sectionDataSource.dataSourceWorkQueue.\(Int(arc4random_uniform(10)))",
-                                              qos: .utility)
-
+    fileprivate let workQueue = DispatchQueue(label: "mm.sectionDataSource.dataSourceWorkQueue", qos: .utility)
 
     public init(initialItems: [Model] = [Model](),
                 sectionFunction: @escaping (Model) -> (String),
@@ -226,8 +226,8 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
     }
 
-    func invokeDelegateUpdate(updates: DataSourceUpdates) {
-        self.delegate?.dataSource(self, didUpdateContent: updates)
+    func invokeDelegateUpdate(updates: DataSourceUpdates, operationIndex: OperationIndex) {
+        self.delegate?.dataSource(self, didUpdateContent: updates, operationIndex: operationIndex)
     }
 
     func invokeSearchDelegateUpdate(updates: DataSourceUpdates) {
@@ -235,6 +235,9 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
     }
 
     func recalculate(updateSorting: Bool = false) {
+        operationIndex += 1
+        let currentOperationIndex = operationIndex
+
         let work = {
             () -> UpdateState in
             if updateSorting && self.limit != nil {
@@ -249,7 +252,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
             self.update(from: updateState)
 
-            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff))
+            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff), operationIndex: currentOperationIndex)
 
             if self.isSearching {
                 self.lazySearch()
@@ -311,6 +314,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
     }
 
     func setupSections() {
+        let currentOperationIndex = operationIndex
 
         let work = {
             () -> UpdateState in
@@ -329,14 +333,17 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
             let nestedDiff = NestedDiff(sectionsDiffSteps: ArrayDiff(inserts: insertions), itemsDiffSteps: [])
 
-            self.invokeDelegateUpdate(updates: .initialSections(changes: nestedDiff))
+            self.invokeDelegateUpdate(updates: .initialSections(changes: nestedDiff), operationIndex: currentOperationIndex)
         }
 
         execute(work: work, completion: completion)
     }
 
+    @discardableResult
+    public func update(items: [Model]) -> OperationIndex {
 
-    public func update(items: [Model]) {
+        operationIndex += 1
+        let currentOperationIndex = operationIndex
 
         let work: () -> UpdateState = {
             let updateState = self.update(for: items)
@@ -348,7 +355,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
             self.update(from: updateState)
 
-            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff))
+            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff), operationIndex: currentOperationIndex)
 
             if self.isSearching {
                 self.lazySearch()
@@ -356,15 +363,22 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
 
         self.execute(work: work, completion: completion)
+
+        return currentOperationIndex
     }
 
-    public func add(item: Model) {
+    @discardableResult
+    public func add(item: Model) -> OperationIndex {
         var newModels = self.models
         newModels.append(item)
-        self.update(items: newModels)
+        return self.update(items: newModels)
     }
 
-    public func update(with diff: [DiffStep<Model>]) {
+    @discardableResult
+    public func update(with diff: [DiffStep<Model>]) -> OperationIndex {
+
+        operationIndex += 1
+        let currentOperationIndex = operationIndex
 
         let work: () -> UpdateState? = {
             guard let newModels = try? self.models.apply(steps: diff) else {
@@ -383,7 +397,7 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
 
             self.update(from: updateState)
 
-            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff))
+            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff), operationIndex: currentOperationIndex)
 
             if self.isSearching {
                 self.lazySearch()
@@ -391,6 +405,8 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         }
 
         self.execute(work: work, completion: completion)
+
+        return currentOperationIndex
     }
 
     func update(for newModels: [Model]) -> UpdateState {
@@ -488,8 +504,9 @@ public class SectionDataSource<Model: Searchable>: NSObject, SectionDataSourcePr
         return (nestedDiff, newIdentifiers, newModels, newSectionItems, newFilteredItems, newSearchableItems, newFilteredPaths, newSearchablePaths)
     }
 
-    public func loadMoreData() {
+    public func loadMoreData() -> OperationIndex {
         self.limit = (self.limit ?? 0) + self.limitStep
+        return operationIndex
     }
 
     func updateLimit(updateSorting: Bool = false) -> UpdateState {

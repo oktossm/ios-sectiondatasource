@@ -2,8 +2,10 @@
 // Created by Mikhail Mulyar on 24/09/2017.
 //
 
+import PaulHeckelDifference
 
-public class SimpleDataSource<Model: Searchable>: SectionDataSource<Model> {
+
+public class SimpleDataSource<Model: Diffable & Searchable>: SectionDataSource<Model> {
 
     public init(initialItems: [Model] = [Model](),
                 sortType: SortType<Model>,
@@ -39,8 +41,8 @@ public class SimpleDataSource<Model: Searchable>: SectionDataSource<Model> {
         }
     }
 
-    override func invokeDelegateUpdate(updates: DataSourceUpdates) {
-        super.invokeDelegateUpdate(updates: flatUpdates(updates: updates))
+    override func invokeDelegateUpdate(updates: DataSourceUpdates, operationIndex: Int) {
+        super.invokeDelegateUpdate(updates: flatUpdates(updates: updates), operationIndex: operationIndex)
     }
 
     public func items() -> [Model] {

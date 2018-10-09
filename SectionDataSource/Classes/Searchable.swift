@@ -7,14 +7,12 @@ import Foundation
 import PaulHeckelDifference
 
 
-public protocol Searchable: Diffable {
-
+public protocol Searchable {
     func pass(_ query: String) -> Bool
 }
 
 
 extension Searchable {
-
     public func pass(_ query: String) -> Bool {
         return false
     }

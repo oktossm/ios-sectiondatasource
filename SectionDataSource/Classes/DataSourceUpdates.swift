@@ -178,8 +178,8 @@ public enum DataSourceUpdates {
     case initialSections(changes: NestedDiff)
     case update(changes: ArrayDiff)
     case updateSections(changes: NestedDiff)
-    case pagination(changes: ArrayDiff, direction: Direction)
-    case countReduction(changes: ArrayDiff, direction: Direction)
+    case pagination(changes: ArrayDiff, direction: Direction) //Not used currentlyb
+    case countReduction(changes: ArrayDiff, direction: Direction) //Not used currently
 }
 
 

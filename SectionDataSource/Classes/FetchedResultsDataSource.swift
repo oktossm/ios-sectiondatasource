@@ -2,11 +2,11 @@
 // Created by Mikhail Mulyar on 25/09/2017.
 //
 
-import Foundation
+import PaulHeckelDifference
 import CoreData
 
 
-public class FetchedResultsDataSource<Model: NSFetchRequestResult & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
+public class FetchedResultsDataSource<Model: NSFetchRequestResult & Diffable & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
 
     public var ignoreFetchedResultsChanges = false
     public var forceObjectUpdatesFromController = false
@@ -109,7 +109,8 @@ public class FetchedResultsDataSource<Model: NSFetchRequestResult & Searchable>:
         if self.itemsForForceUpdates.isEmpty == false {
             let indexes = self.itemsForForceUpdates.compactMap { self.indexPath(for: $0)?.row }.map { ($0, $0) }
             let diff = ArrayDiff(inserts: [], deletes: [], moves: [], updates: indexes)
-            self.invokeDelegateUpdate(updates: .updateSections(changes: NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [diff])))
+            operationIndex += 1
+            self.invokeDelegateUpdate(updates: .updateSections(changes: NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [diff])), operationIndex: operationIndex)
             self.itemsForForceUpdates.removeAll()
         }
 

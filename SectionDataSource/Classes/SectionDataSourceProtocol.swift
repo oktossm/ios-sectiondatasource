@@ -9,10 +9,12 @@ import PaulHeckelDifference
 
 public let SearchSection = "kSearchSection"
 
+public typealias OperationIndex = Int
+
 
 public protocol SectionDataSourceProtocol {
 
-    associatedtype Model: Searchable
+    associatedtype Model: Diffable, Searchable
 
 
     // MARK: - Input
@@ -29,9 +31,25 @@ public protocol SectionDataSourceProtocol {
 
     var limit: Int? { get set }
 
-    var searchInterval: TimeInterval { get set }
 
-    func loadMoreData()
+    // MARK: - Delegate
+
+    var delegate: SectionDataSourceDelegate? { get set }
+
+
+    // MARK: - Update methods
+
+    @discardableResult
+    func update(items: [Model]) -> OperationIndex
+
+    @discardableResult
+    func add(item: Model) -> OperationIndex
+
+    @discardableResult
+    func update(with diff: [DiffStep<Model>]) -> OperationIndex
+
+    @discardableResult
+    func loadMoreData() -> OperationIndex
 
 
     // MARK: - Properties
@@ -41,8 +59,6 @@ public protocol SectionDataSourceProtocol {
     var hasMoreData: Bool { get }
 
     var isSearching: Bool { get }
-
-    var delegate: SectionDataSourceDelegate? { get set }
 
 
     // MARK: - Data source

@@ -5,7 +5,11 @@ source 'https://github.com/CocoaPods/Specs.git'
 
 use_frameworks!
 
+target 'SectionDataSourceExample' do
+    pod 'SectionDataSource', :path => '../'
+    pod 'Hue'
+end
+
 target 'SectionDataSource_Tests' do
   pod 'SectionDataSource', :path => '../'
-                                   
 end
