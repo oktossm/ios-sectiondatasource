@@ -412,7 +412,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
     func update(for newModels: [Model]) -> UpdateState {
 
         var newIdentifiers = self.sectionType.prefilled ?? [String]()
-        var unsortedItems = Array(repeating: [Model](), count: newIdentifiers.count)
+        var unsortedItems = Dictionary(uniqueKeysWithValues: newIdentifiers.map { ($0, [Model]()) })
         var newSectionItems = [String: SortedArray<Model>]()
         var newFilteredItems = [String: SortedArray<Model>]()
         var newSearchableItems = [String: SortedArray<Model>]()
@@ -423,16 +423,13 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
             let section = self.sectionFunction(model)
 
-            var index = newIdentifiers.index(of: section)
+            var sectionItems = unsortedItems[section]
 
-            if self.sectionType.prefilled == nil, index == nil {
-                index = unsortedItems.count
+            if self.sectionType.prefilled == nil, sectionItems == nil {
                 newIdentifiers.append(section)
-                unsortedItems.append([Model]())
-            }
-
-            if let i = index {
-                unsortedItems[i].append(model)
+                unsortedItems[section] = [model]
+            } else {
+                unsortedItems[section]?.append(model)
             }
         }
 
@@ -443,12 +440,16 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             newIdentifiers.sort(by: function)
         }
 
-        for (index, identifier) in newIdentifiers.enumerated() {
+        for section in newIdentifiers {
+            guard let items = unsortedItems[section] else {
+                newSectionItems[section] = SortedArray(sorted: [], areInIncreasingOrder: self.sortType.function)
+                continue
+            }
             switch self.sortType {
             case .unsorted:
-                newSectionItems[identifier] = SortedArray(sorted: unsortedItems[index], areInIncreasingOrder: self.sortType.function)
+                newSectionItems[section] = SortedArray(sorted: items, areInIncreasingOrder: self.sortType.function)
             case .function:
-                newSectionItems[identifier] = SortedArray(unsorted: unsortedItems[index], areInIncreasingOrder: self.sortType.function)
+                newSectionItems[section] = SortedArray(unsorted: items, areInIncreasingOrder: self.sortType.function)
             }
         }
 

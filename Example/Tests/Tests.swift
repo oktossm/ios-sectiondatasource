@@ -1,9 +1,10 @@
 import UIKit
 import XCTest
+import PaulHeckelDifference
 @testable import SectionDataSource
 
 
-struct TestModel: Searchable, CustomDebugStringConvertible {
+struct TestModel: Diffable, Searchable, CustomDebugStringConvertible {
 
     let identifier: String
     var value: String
@@ -31,12 +32,12 @@ func ==(lhs: TestModel, rhs: TestModel) -> Bool {
 }
 
 
-final class MockedSimpleDataSource<Model: Searchable>: SimpleDataSource<Model> {
+final class MockedSimpleDataSource<Model: Diffable & Searchable>: SimpleDataSource<Model> {
 
     var contentExpectationBlock: ((DataSourceUpdates) -> Void)?
     var searchContentExpectationBlock: ((DataSourceUpdates) -> Void)?
 
-    override func invokeDelegateUpdate(updates: DataSourceUpdates) {
+    override func invokeDelegateUpdate(updates: DataSourceUpdates, operationIndex: OperationIndex) {
         self.contentExpectationBlock?(self.flatUpdates(updates: updates))
     }
 
@@ -46,12 +47,12 @@ final class MockedSimpleDataSource<Model: Searchable>: SimpleDataSource<Model> {
 }
 
 
-final class MockedSectionDataSource<Model: Searchable>: SectionDataSource<Model> {
+final class MockedSectionDataSource<Model: Diffable & Searchable>: SectionDataSource<Model> {
 
     var contentExpectationBlock: ((DataSourceUpdates) -> Void)?
     var searchContentExpectationBlock: ((DataSourceUpdates) -> Void)?
 
-    override func invokeDelegateUpdate(updates: DataSourceUpdates) {
+    override func invokeDelegateUpdate(updates: DataSourceUpdates, operationIndex: OperationIndex) {
         self.contentExpectationBlock?(updates)
     }
 
@@ -209,6 +210,33 @@ final class Tests: XCTestCase {
 
         dataSource.update(items: [TestModel(identifier: "a", value: "1"),
                                   TestModel(identifier: "b", value: "2")])
+
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func testDelete() {
+
+        let expectation = XCTestExpectation()
+
+        let dataSource = Tests.simpleDataSource([TestModel(identifier: "a", value: "3"),
+                                                 TestModel(identifier: "b", value: "1")])
+
+        dataSource.contentExpectationBlock = {
+            updates in
+
+            if case .initial = updates { return }
+
+            guard case .update(let changes) = updates,
+                  changes.deletes.count == 1,
+                  changes.deletes.contains(where: { $0 == 0 })
+                    else {
+                XCTAssertTrue(false, "\(updates)")
+                return
+            }
+            expectation.fulfill()
+        }
+
+        dataSource.update(items: [TestModel(identifier: "b", value: "1")])
 
         wait(for: [expectation], timeout: 1)
     }
