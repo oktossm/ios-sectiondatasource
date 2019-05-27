@@ -3,7 +3,7 @@
 // Copyright (c) 2016 Mikhail Mulyar. All rights reserved.
 //
 
-import PaulHeckelDifference
+import PHDiff
 
 
 public enum Direction {
@@ -185,7 +185,7 @@ public enum DataSourceUpdates {
 
 //MARK: - UIKit
 extension ArrayDiff {
-    func update(tableView: UITableView, animations: UITableViewRowAnimation = .fade, performReloads: Bool = true) {
+    func update(tableView: UITableView, animations: UITableView.RowAnimation = .fade, performReloads: Bool = true) {
         let sorted = self.sortedPaths()
 
         if sorted.deletions.isEmpty == false {
@@ -216,7 +216,7 @@ extension ArrayDiff {
 
 
 extension NestedDiff {
-    func update(tableView: UITableView, animations: UITableViewRowAnimation = .fade, performReloads: Bool = true) {
+    func update(tableView: UITableView, animations: UITableView.RowAnimation = .fade, performReloads: Bool = true) {
         let sorted = self.sectionsDiffSteps.sortedDiff()
 
         if sorted.deletions.isEmpty == false {

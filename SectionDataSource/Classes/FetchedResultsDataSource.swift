@@ -2,7 +2,7 @@
 // Created by Mikhail Mulyar on 25/09/2017.
 //
 
-import PaulHeckelDifference
+import PHDiff
 import CoreData
 
 

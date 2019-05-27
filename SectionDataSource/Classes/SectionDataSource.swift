@@ -5,7 +5,7 @@
 
 import Foundation
 import Dispatch
-import PaulHeckelDifference
+import PHDiff
 import SortedArray
 
 
@@ -423,7 +423,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
             let section = self.sectionFunction(model)
 
-            var sectionItems = unsortedItems[section]
+            let sectionItems = unsortedItems[section]
 
             if self.sectionType.prefilled == nil, sectionItems == nil {
                 newIdentifiers.append(section)
@@ -562,7 +562,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
             let steps = sorted.array.difference(from: oldModels.array)
 
-            itemDiffs[self.identifiers.index(of: identifier)!] = ArrayDiff(diffSteps: steps)
+            itemDiffs[self.identifiers.firstIndex(of: identifier)!] = ArrayDiff(diffSteps: steps)
         }
 
         let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs)
@@ -734,7 +734,7 @@ extension RangeReplaceableCollection where Iterator.Element: Equatable {
 
     // Remove first collection element that is equal to the given `object`:
     mutating func removeObject(_ object: Iterator.Element) {
-        if let index = self.index(of: object) {
+        if let index = self.firstIndex(of: object) {
             self.remove(at: index)
         }
     }

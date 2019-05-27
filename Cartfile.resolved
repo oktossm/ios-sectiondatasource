@@ -1,0 +1,3 @@
+git "https://bitbucket.org/mmulyar/phdiff.git" "1.1"
+git "https://bitbucket.org/mmulyar/sectiondatasource.git" "0.9.7"
+git "https://bitbucket.org/mmulyar/sortedarray.git" "0.3"

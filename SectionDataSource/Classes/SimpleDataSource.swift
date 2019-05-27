@@ -2,7 +2,7 @@
 // Created by Mikhail Mulyar on 24/09/2017.
 //
 
-import PaulHeckelDifference
+import PHDiff
 
 
 public class SimpleDataSource<Model: Diffable & Searchable>: SectionDataSource<Model> {

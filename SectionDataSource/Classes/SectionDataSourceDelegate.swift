@@ -2,7 +2,7 @@
 // Created by Mikhail Mulyar on 17/11/2017.
 //
 
-import PaulHeckelDifference
+import PHDiff
 
 
 public protocol SectionDataSourceDelegate: class {
