@@ -1,7 +1,7 @@
 PODS:
-  - Hue (2.0.1)
-  - PaulHeckelDifference (1.0.9)
-  - SectionDataSource (0.9.9):
+  - Hue (5.0.0)
+  - PaulHeckelDifference (1.1)
+  - SectionDataSource (0.11.1):
     - PaulHeckelDifference
     - SortedArray (~> 0.2)
   - SortedArray (0.2)
@@ -22,11 +22,11 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Hue: 354caec055fdc9d38b5ef33ca2e7224721843baf
-  PaulHeckelDifference: c0a3b870c4514ac8a42791df921864b04495db04
-  SectionDataSource: 268745fdd199c1ed254c8a41284d02289f2aba66
+  Hue: c129cb67be7d093a82bbbc30ce8a96757bf6f37a
+  PaulHeckelDifference: 2724c6ff4b4a00f54d040d111788572136371943
+  SectionDataSource: 514f03cb4d81d2bb7c617157ce7e8a32d7467b90
   SortedArray: 06a50b40e96093efc9f361187b2f0fa7f5e9897f
 
 PODFILE CHECKSUM: fb21e311f0b3fd80af363231d69db960d6769229
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.7.1

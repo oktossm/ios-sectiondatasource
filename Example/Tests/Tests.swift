@@ -149,7 +149,7 @@ final class Tests: XCTestCase {
 
         dataSource.contentExpectationBlock = {
             updates in
-            guard case .initialSections(let changes) = updates, changes.sectionsDiffSteps.inserts.count > 0 else {
+            guard case .initial(let changes) = updates, changes.sectionsDiffSteps.inserts.count > 0 else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -386,7 +386,7 @@ final class Tests: XCTestCase {
         dataSource.contentExpectationBlock = {
             updates in
 
-            if case .initialSections = updates { return }
+            if case .initial = updates { return }
 
             guard case .updateSections(let changes) = updates,
                   changes.sectionsDiffSteps.inserts.count == 1,
@@ -430,7 +430,7 @@ final class Tests: XCTestCase {
         dataSource.contentExpectationBlock = {
             updates in
 
-            if case .initialSections = updates { return }
+            if case .initial = updates { return }
 
             guard case .updateSections(let changes) = updates,
                   changes.sectionsDiffSteps.inserts.count == 0,
@@ -564,7 +564,7 @@ final class Tests: XCTestCase {
         dataSource.contentExpectationBlock = {
             updates in
 
-            if case .initialSections = updates { return }
+            if case .initial = updates { return }
 
             for section in 0..<dataSource.numberOfSections() {
                 let items = dataSource.itemsInSection(section)

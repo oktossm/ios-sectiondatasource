@@ -333,7 +333,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
             let nestedDiff = NestedDiff(sectionsDiffSteps: ArrayDiff(inserts: insertions), itemsDiffSteps: [])
 
-            self.invokeDelegateUpdate(updates: .initialSections(changes: nestedDiff), operationIndex: currentOperationIndex)
+            self.invokeDelegateUpdate(updates: .initial(changes: nestedDiff), operationIndex: currentOperationIndex)
         }
 
         execute(work: work, completion: completion)

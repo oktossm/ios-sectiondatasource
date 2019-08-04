@@ -8,7 +8,7 @@ import SectionDataSource
 
 // MARK: - UIKit
 extension ArrayDiff {
-    func update(tableView: UITableView, animations: UITableViewRowAnimation = .fade, performReloads: Bool = true) {
+    func update(tableView: UITableView, animations: UITableView.RowAnimation = .fade, performReloads: Bool = true) {
         let deleted = self.deletedPaths()
         let inserted = self.insertedPaths()
         let moved = self.movedPaths()
@@ -49,7 +49,7 @@ extension ArrayDiff {
 
 
 extension NestedDiff {
-    func update(tableView: UITableView, animations: UITableViewRowAnimation = .fade, performReloads: Bool = true) {
+    func update(tableView: UITableView, animations: UITableView.RowAnimation = .fade, performReloads: Bool = true) {
         let sorted = self.sectionsDiffSteps.sortedDiff()
         if sorted.deletions.isEmpty == false {
             tableView.deleteSections(IndexSet(sorted.deletions), with: animations)

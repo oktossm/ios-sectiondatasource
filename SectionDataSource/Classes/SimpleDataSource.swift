@@ -24,13 +24,12 @@ public class SimpleDataSource<Model: Diffable & Searchable>: SectionDataSource<M
 
     func flatUpdates(updates: DataSourceUpdates) -> DataSourceUpdates {
         switch updates {
-        case .initialSections(let changes):
-            if let updates = changes.itemsDiffSteps.first {
-                return .initial(changes: updates)
-            } else {
-                return .initial(changes: ArrayDiff(updates: []))
-            }
+        case .initial:
+            return updates
         case .updateSections(let changes):
+            if !changes.sectionsDiffSteps.isEmpty {
+                return .reload
+            }
             if let updates = changes.itemsDiffSteps.first {
                 return .update(changes: updates)
             } else {

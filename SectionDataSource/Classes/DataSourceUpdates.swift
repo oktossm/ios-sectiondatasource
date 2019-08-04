@@ -174,8 +174,7 @@ extension Array where Element: DiffSectionType {
 
 public enum DataSourceUpdates {
     case reload
-    case initial(changes: ArrayDiff)
-    case initialSections(changes: NestedDiff)
+    case initial(changes: NestedDiff)
     case update(changes: ArrayDiff)
     case updateSections(changes: NestedDiff)
     case pagination(changes: ArrayDiff, direction: Direction) //Not used currentlyb
