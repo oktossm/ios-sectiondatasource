@@ -42,5 +42,5 @@ Pod::Spec.new do |s|
   # s.frameworks = 'UIKit', 'MapKit'
   
   s.dependency 'SortedArray', '~> 0.3.1'
-  s.dependency 'PHDiff'
+  s.dependency 'mmpods/PHDiff'
 end
