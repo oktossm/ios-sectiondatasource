@@ -286,14 +286,14 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SectionDataSourceExample/Pods-SectionDataSourceExample-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Hue/Hue.framework",
-				"${BUILT_PRODUCTS_DIR}/PaulHeckelDifference/PaulHeckelDifference.framework",
+				"${BUILT_PRODUCTS_DIR}/PHDiff/PHDiff.framework",
 				"${BUILT_PRODUCTS_DIR}/SectionDataSource/SectionDataSource.framework",
 				"${BUILT_PRODUCTS_DIR}/SortedArray/SortedArray.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Hue.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PaulHeckelDifference.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PHDiff.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SectionDataSource.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SortedArray.framework",
 			);
@@ -331,13 +331,13 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SectionDataSource_Tests/Pods-SectionDataSource_Tests-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/PaulHeckelDifference/PaulHeckelDifference.framework",
+				"${BUILT_PRODUCTS_DIR}/PHDiff/PHDiff.framework",
 				"${BUILT_PRODUCTS_DIR}/SectionDataSource/SectionDataSource.framework",
 				"${BUILT_PRODUCTS_DIR}/SortedArray/SortedArray.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PaulHeckelDifference.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PHDiff.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SectionDataSource.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SortedArray.framework",
 			);

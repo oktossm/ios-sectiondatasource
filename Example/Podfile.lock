@@ -1,20 +1,20 @@
 PODS:
   - Hue (5.0.0)
-  - PaulHeckelDifference (1.1)
-  - SectionDataSource (0.11.1):
-    - PaulHeckelDifference
-    - SortedArray (~> 0.2)
-  - SortedArray (0.2)
+  - PHDiff (1.1.1)
+  - SectionDataSource (0.11.2):
+    - PHDiff
+    - SortedArray (~> 0.3.1)
+  - SortedArray (0.3.1)
 
 DEPENDENCIES:
   - Hue
   - SectionDataSource (from `../`)
 
 SPEC REPOS:
-  "git@bitbucket.org:mmulyar/mmpods.git":
-    - PaulHeckelDifference
+  https://bitbucket.org/mmulyar/mmpods.git:
+    - PHDiff
     - SortedArray
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Hue
 
 EXTERNAL SOURCES:
@@ -23,10 +23,10 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Hue: c129cb67be7d093a82bbbc30ce8a96757bf6f37a
-  PaulHeckelDifference: 2724c6ff4b4a00f54d040d111788572136371943
-  SectionDataSource: 514f03cb4d81d2bb7c617157ce7e8a32d7467b90
-  SortedArray: 06a50b40e96093efc9f361187b2f0fa7f5e9897f
+  PHDiff: e184f0c80747c396490cc41aa6fb8b455639ae15
+  SectionDataSource: cb391432aa9474688ad0e5cabae8de84ee39e3e3
+  SortedArray: fd51876b3665d6ec56f3de960d3c00408a962b59
 
-PODFILE CHECKSUM: fb21e311f0b3fd80af363231d69db960d6769229
+PODFILE CHECKSUM: 6f864d0dd046822c80cfc5c1dfcd2272be25b9e4
 
-COCOAPODS: 1.7.1
+COCOAPODS: 1.8.4

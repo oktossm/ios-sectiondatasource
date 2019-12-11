@@ -41,7 +41,6 @@ Pod::Spec.new do |s|
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   
-  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '5.0' }
   s.dependency 'SortedArray', '~> 0.3.1'
   s.dependency 'PHDiff'
 end
