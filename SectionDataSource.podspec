@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'SectionDataSource'
-  s.version          = '0.11.2'
+  s.version          = '0.11.3'
   s.summary          = 'Data source for working with items which should be split into sections'
 
 # This description is used to generate tags and improve search results.

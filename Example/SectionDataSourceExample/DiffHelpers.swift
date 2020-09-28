@@ -60,7 +60,7 @@ extension NestedDiff {
         if sorted.updates.isEmpty == false {
             tableView.reloadSections(IndexSet(sorted.updates.map { $0.oldIndex }), with: animations)
         }
-        for (index, diff) in self.itemsDiffSteps.filter({ !$0.isEmpty }).enumerated() {
+        for (index, diff) in self.oldItemDiffSteps.filter({ !$0.isEmpty }).enumerated() {
             let sorted = diff.sortedPaths(in: index)
             if sorted.deletions.isEmpty == false {
                 tableView.deleteRows(at: sorted.deletions, with: animations)
@@ -85,7 +85,7 @@ extension NestedDiff {
         if sorted.updates.isEmpty == false {
             collectionView.reloadSections(IndexSet(sorted.updates.map { $0.oldIndex }))
         }
-        for (index, diff) in self.itemsDiffSteps.filter({ !$0.isEmpty }).enumerated() {
+        for (index, diff) in self.oldItemDiffSteps.filter({ !$0.isEmpty }).enumerated() {
             let sorted = diff.sortedPaths(in: index)
             if sorted.deletions.isEmpty == false {
                 collectionView.deleteItems(at: sorted.deletions)

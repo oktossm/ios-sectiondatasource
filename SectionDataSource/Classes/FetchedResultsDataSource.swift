@@ -110,7 +110,7 @@ public class FetchedResultsDataSource<Model: NSFetchRequestResult & Diffable & S
             let indexes = self.itemsForForceUpdates.compactMap { self.indexPath(for: $0)?.row }.map { ($0, $0) }
             let diff = ArrayDiff(inserts: [], deletes: [], moves: [], updates: indexes)
             operationIndex += 1
-            self.invokeDelegateUpdate(updates: .updateSections(changes: NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [diff])), operationIndex: operationIndex)
+            self.invokeDelegateUpdate(updates: .updateSections(changes: NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [diff], oldItemDiffSteps: [diff])), operationIndex: operationIndex)
             self.itemsForForceUpdates.removeAll()
         }
 

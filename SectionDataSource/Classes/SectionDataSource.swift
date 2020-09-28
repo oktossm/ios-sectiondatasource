@@ -331,7 +331,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
             let insertions: Array<Int> = self.identifiers.count > 0 ? Array(0..<self.identifiers.count) : [Int]()
 
-            let nestedDiff = NestedDiff(sectionsDiffSteps: ArrayDiff(inserts: insertions), itemsDiffSteps: [])
+            let nestedDiff = NestedDiff(sectionsDiffSteps: ArrayDiff(inserts: insertions), itemsDiffSteps: [], oldItemDiffSteps: [])
 
             self.invokeDelegateUpdate(updates: .initial(changes: nestedDiff), operationIndex: currentOperationIndex)
         }
@@ -454,6 +454,10 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         }
 
         var itemDiffs: [ArrayDiff] = Array(repeating: ArrayDiff(), count: newIdentifiers.count)
+        var oldItemDiffs: [ArrayDiff] = Array(repeating: ArrayDiff(), count: self.identifiers.count)
+
+        let oldIdentifierIndexes: [String: Int] = Dictionary(self.identifiers.enumerated().map { ($0.element, $0.offset) },
+                                                             uniquingKeysWith: { _, second in second })
 
         for (index, identifier) in newIdentifiers.enumerated() {
 
@@ -486,6 +490,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             if let old = self.filteredSectionedItems[identifier] {
                 let steps = sorted.array.difference(from: old.array)
                 itemDiffs[index] = ArrayDiff(diffSteps: steps)
+                oldItemDiffs[oldIdentifierIndexes[identifier] ?? 0] = ArrayDiff(diffSteps: steps)
             }
         }
 
@@ -500,7 +505,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             sectionDiff = ArrayDiff(diffSteps: steps)
         }
 
-        let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs)
+        let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs, oldItemDiffSteps: oldItemDiffs)
 
         return (nestedDiff, newIdentifiers, newModels, newSectionItems, newFilteredItems, newSearchableItems, newFilteredPaths, newSearchablePaths)
     }
@@ -565,7 +570,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             itemDiffs[self.identifiers.firstIndex(of: identifier)!] = ArrayDiff(diffSteps: steps)
         }
 
-        let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs)
+        let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs, oldItemDiffSteps: itemDiffs)
 
         return (nestedDiff,
                 self.identifiers,

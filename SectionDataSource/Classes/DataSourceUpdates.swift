@@ -131,11 +131,13 @@ func ==<T: DiffSectionType>(lhs: T, rhs: T) -> Bool {
 
 public struct NestedDiff {
     public let sectionsDiffSteps: ArrayDiff
-    public let itemsDiffSteps: [ArrayDiff]
+    public let itemsDiffSteps: [ArrayDiff]    // New section indexes
+    public let oldItemDiffSteps: [ArrayDiff]  // Old section indexes (used in tableView/collectionView batch updates)
 
-    public init(sectionsDiffSteps: ArrayDiff, itemsDiffSteps: [ArrayDiff]) {
+    public init(sectionsDiffSteps: ArrayDiff, itemsDiffSteps: [ArrayDiff], oldItemDiffSteps: [ArrayDiff]) {
         self.sectionsDiffSteps = sectionsDiffSteps
         self.itemsDiffSteps = itemsDiffSteps
+        self.oldItemDiffSteps = oldItemDiffSteps
     }
 }
 
@@ -145,29 +147,33 @@ extension Array where Element: DiffSectionType {
     public func nestedDifference(from array: [Element]) -> NestedDiff {
 
         var itemsSteps: [ArrayDiff] = []
+        var oldItemsSteps: [ArrayDiff] = []
         self.forEach { _ in itemsSteps.append(ArrayDiff()) }
+        array.forEach { _ in oldItemsSteps.append(ArrayDiff()) }
 
         let steps = self.difference(from: array).compactMap {
             (step: DiffStep<Element>) -> DiffStep<Element>? in
             switch step {
-            case let .move(section, old, index):
-                let old = array[old]
+            case let .move(section, oldIndex, index):
+                let old = array[oldIndex]
 
                 let diff: [DiffStep<Element.Item>] = section.items.difference(from: old.items)
                 itemsSteps[index] = ArrayDiff(diffSteps: diff)
+                oldItemsSteps[oldIndex] = ArrayDiff(diffSteps: diff)
                 return step
-            case let .update(section, index, old):
-                let old = array[old]
+            case let .update(section, index, oldIndex):
+                let old = array[oldIndex]
 
                 let diff: [DiffStep<Element.Item>] = section.items.difference(from: old.items)
                 itemsSteps[index] = ArrayDiff(diffSteps: diff)
+                oldItemsSteps[oldIndex] = ArrayDiff(diffSteps: diff)
                 return nil
             default:
                 return step
             }
         }
 
-        return NestedDiff(sectionsDiffSteps: ArrayDiff(diffSteps: steps), itemsDiffSteps: itemsSteps)
+        return NestedDiff(sectionsDiffSteps: ArrayDiff(diffSteps: steps), itemsDiffSteps: itemsSteps, oldItemDiffSteps: itemsSteps)
     }
 }
 
@@ -228,7 +234,7 @@ extension NestedDiff {
             tableView.reloadSections(IndexSet(sorted.updates.map { $0.oldIndex }), with: animations)
         }
 
-        for (index, diff) in self.itemsDiffSteps.filter({ !$0.isEmpty }).enumerated() {
+        for (index, diff) in self.oldItemDiffSteps.filter({ !$0.isEmpty }).enumerated() {
             let sorted = diff.sortedPaths(in: index)
 
             if sorted.deletions.isEmpty == false {
@@ -256,7 +262,7 @@ extension NestedDiff {
             collectionView.reloadSections(IndexSet(sorted.updates.map { $0.oldIndex }))
         }
 
-        for (index, diff) in self.itemsDiffSteps.filter({ !$0.isEmpty }).enumerated() {
+        for (index, diff) in self.oldItemDiffSteps.filter({ !$0.isEmpty }).enumerated() {
             let sorted = diff.sortedPaths(in: index)
 
             if sorted.deletions.isEmpty == false {
