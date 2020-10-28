@@ -2,8 +2,6 @@
 // Created by Mikhail Mulyar on 17/11/2017.
 //
 
-import PHDiff
-
 
 public protocol SectionDataSourceDelegate: class {
     func dataSource<T: Diffable>(_ dataSource: SectionDataSource<T>, didUpdateContent updates: DataSourceUpdates, operationIndex: OperationIndex)
@@ -13,11 +11,7 @@ public protocol SectionDataSourceDelegate: class {
 
 
 extension SectionDataSourceDelegate {
-    public func dataSource<T: Diffable>(_ dataSource: SectionDataSource<T>, didUpdateSearchContent updates: DataSourceUpdates) {
+    public func dataSource<T: Diffable>(_ dataSource: SectionDataSource<T>, didUpdateSearchContent updates: DataSourceUpdates) {}
 
-    }
-
-    public func dataSource<T: Diffable>(_ dataSource: SectionDataSource<T>, didUpdateSearchState isSearching: Bool) {
-
-    }
+    public func dataSource<T: Diffable>(_ dataSource: SectionDataSource<T>, didUpdateSearchState isSearching: Bool) {}
 }

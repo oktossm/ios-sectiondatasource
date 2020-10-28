@@ -7,41 +7,40 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1A89588DC1FB92AD9103BE7A /* Pods_SectionDataSource_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B726F5F70BEF5F6030789A6 /* Pods_SectionDataSource_Tests.framework */; };
+		EF246C172541C55200981831 /* DifferenceKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF246C162541C55200981831 /* DifferenceKit.framework */; };
+		EF246C1D2541C5A200981831 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF246C1A2541C5A200981831 /* UIKitExtensions.swift */; };
+		EF246C1E2541C5A200981831 /* Filterable.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF246C1B2541C5A200981831 /* Filterable.swift */; };
+		EF246C1F2541C5A200981831 /* SortedArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF246C1C2541C5A200981831 /* SortedArray.swift */; };
 		EFE08665229BBFA2005440D3 /* SectionDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = EFE08663229BBFA2005440D3 /* SectionDataSource.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EFE08672229BBFBC005440D3 /* DataSourceUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE0866A229BBFBC005440D3 /* DataSourceUpdates.swift */; };
 		EFE08673229BBFBC005440D3 /* SectionDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE0866B229BBFBC005440D3 /* SectionDataSource.swift */; };
 		EFE08674229BBFBC005440D3 /* FetchedResultsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE0866C229BBFBC005440D3 /* FetchedResultsDataSource.swift */; };
-		EFE08675229BBFBC005440D3 /* .gitkeep in Resources */ = {isa = PBXBuildFile; fileRef = EFE0866D229BBFBC005440D3 /* .gitkeep */; };
 		EFE08676229BBFBC005440D3 /* SectionDataSourceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE0866E229BBFBC005440D3 /* SectionDataSourceDelegate.swift */; };
 		EFE08677229BBFBC005440D3 /* SimpleDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE0866F229BBFBC005440D3 /* SimpleDataSource.swift */; };
 		EFE08678229BBFBC005440D3 /* Searchable.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE08670229BBFBC005440D3 /* Searchable.swift */; };
 		EFE08679229BBFBC005440D3 /* SectionDataSourceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE08671229BBFBC005440D3 /* SectionDataSourceProtocol.swift */; };
 		EFE0867D229BBFEB005440D3 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE0867B229BBFEB005440D3 /* Tests.swift */; };
 		EFE0867E229BBFEB005440D3 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EFE0867C229BBFEB005440D3 /* Info.plist */; };
-		EFE08681229BC011005440D3 /* PHDiff.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE0867F229BC011005440D3 /* PHDiff.framework */; };
-		EFE08682229BC011005440D3 /* SortedArray.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE08680229BC011005440D3 /* SortedArray.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		607FACE51AFB9204008FA782 /* SectionDataSource_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SectionDataSource_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		70035E9FE24D3E76DCFE4C76 /* Pods_SectionDataSourceExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SectionDataSourceExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		8B726F5F70BEF5F6030789A6 /* Pods_SectionDataSource_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SectionDataSource_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF246C162541C55200981831 /* DifferenceKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DifferenceKit.framework; path = Carthage/Build/iOS/DifferenceKit.framework; sourceTree = "<group>"; };
+		EF246C1A2541C5A200981831 /* UIKitExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
+		EF246C1B2541C5A200981831 /* Filterable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filterable.swift; sourceTree = "<group>"; };
+		EF246C1C2541C5A200981831 /* SortedArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SortedArray.swift; sourceTree = "<group>"; };
 		EFE08661229BBFA2005440D3 /* SectionDataSource.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SectionDataSource.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFE08663229BBFA2005440D3 /* SectionDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SectionDataSource.h; sourceTree = "<group>"; };
 		EFE08664229BBFA2005440D3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EFE0866A229BBFBC005440D3 /* DataSourceUpdates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataSourceUpdates.swift; sourceTree = "<group>"; };
 		EFE0866B229BBFBC005440D3 /* SectionDataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SectionDataSource.swift; sourceTree = "<group>"; };
 		EFE0866C229BBFBC005440D3 /* FetchedResultsDataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FetchedResultsDataSource.swift; sourceTree = "<group>"; };
-		EFE0866D229BBFBC005440D3 /* .gitkeep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
 		EFE0866E229BBFBC005440D3 /* SectionDataSourceDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SectionDataSourceDelegate.swift; sourceTree = "<group>"; };
 		EFE0866F229BBFBC005440D3 /* SimpleDataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleDataSource.swift; sourceTree = "<group>"; };
 		EFE08670229BBFBC005440D3 /* Searchable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Searchable.swift; sourceTree = "<group>"; };
 		EFE08671229BBFBC005440D3 /* SectionDataSourceProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SectionDataSourceProtocol.swift; sourceTree = "<group>"; };
 		EFE0867B229BBFEB005440D3 /* Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		EFE0867C229BBFEB005440D3 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		EFE0867F229BC011005440D3 /* PHDiff.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PHDiff.framework; path = Carthage/Build/iOS/PHDiff.framework; sourceTree = "<group>"; };
-		EFE08680229BC011005440D3 /* SortedArray.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SortedArray.framework; path = Carthage/Build/iOS/SortedArray.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,7 +48,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A89588DC1FB92AD9103BE7A /* Pods_SectionDataSource_Tests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,8 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EFE08681229BC011005440D3 /* PHDiff.framework in Frameworks */,
-				EFE08682229BC011005440D3 /* SortedArray.framework in Frameworks */,
+				EF246C172541C55200981831 /* DifferenceKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,10 +65,7 @@
 		2D0E36E332D23AA6D6E6EABD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				EFE0867F229BC011005440D3 /* PHDiff.framework */,
-				EFE08680229BC011005440D3 /* SortedArray.framework */,
-				8B726F5F70BEF5F6030789A6 /* Pods_SectionDataSource_Tests.framework */,
-				70035E9FE24D3E76DCFE4C76 /* Pods_SectionDataSourceExample.framework */,
+				EF246C162541C55200981831 /* DifferenceKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -108,10 +102,12 @@
 		EFE08669229BBFBC005440D3 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				EF246C1B2541C5A200981831 /* Filterable.swift */,
+				EF246C1C2541C5A200981831 /* SortedArray.swift */,
+				EF246C1A2541C5A200981831 /* UIKitExtensions.swift */,
 				EFE0866A229BBFBC005440D3 /* DataSourceUpdates.swift */,
 				EFE0866B229BBFBC005440D3 /* SectionDataSource.swift */,
 				EFE0866C229BBFBC005440D3 /* FetchedResultsDataSource.swift */,
-				EFE0866D229BBFBC005440D3 /* .gitkeep */,
 				EFE0866E229BBFBC005440D3 /* SectionDataSourceDelegate.swift */,
 				EFE0866F229BBFBC005440D3 /* SimpleDataSource.swift */,
 				EFE08670229BBFBC005440D3 /* Searchable.swift */,
@@ -235,7 +231,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EFE08675229BBFBC005440D3 /* .gitkeep in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,8 +296,11 @@
 				EFE08678229BBFBC005440D3 /* Searchable.swift in Sources */,
 				EFE08676229BBFBC005440D3 /* SectionDataSourceDelegate.swift in Sources */,
 				EFE08672229BBFBC005440D3 /* DataSourceUpdates.swift in Sources */,
+				EF246C1F2541C5A200981831 /* SortedArray.swift in Sources */,
 				EFE08679229BBFBC005440D3 /* SectionDataSourceProtocol.swift in Sources */,
 				EFE08674229BBFBC005440D3 /* FetchedResultsDataSource.swift in Sources */,
+				EF246C1D2541C5A200981831 /* UIKitExtensions.swift in Sources */,
+				EF246C1E2541C5A200981831 /* Filterable.swift in Sources */,
 				EFE08677229BBFBC005440D3 /* SimpleDataSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

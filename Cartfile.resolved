@@ -1,2 +1,1 @@
-git "https://bitbucket.org/mmulyar/phdiff.git" "1.1"
-git "https://bitbucket.org/mmulyar/sortedarray.git" "0.3"
+github "ra1028/DifferenceKit" "1.1.5"

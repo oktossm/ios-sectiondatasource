@@ -5,19 +5,38 @@
 
 import Foundation
 import Dispatch
-import PHDiff
-import SortedArray
+import DifferenceKit
 
 
 public enum SortType<Model: Diffable> {
     ///Sort function
     case unsorted
+    case comparable(ascending: Bool)
     case function (function: (Model, Model) -> Bool)
+}
 
+
+extension SortType {
     var function: (Model, Model) -> Bool {
         switch self {
         case .function(let function):
             return function
+        case .comparable:
+            return { (_, _) in false }
+        case .unsorted:
+            return { (_, _) in false }
+        }
+    }
+}
+
+
+extension SortType where Model: Comparable {
+    var function: (Model, Model) -> Bool {
+        switch self {
+        case .function(let function):
+            return function
+        case .comparable(let ascending):
+            return { ascending ? $0 < $1 : $0 > $1 }
         case .unsorted:
             return { (_, _) in false }
         }
@@ -30,14 +49,23 @@ public enum SearchType<Model: Searchable> {
     case searchable
     ///Search in memory using custom function
     case function (function: (Model, String) -> Bool)
-    ///Search using predicate for property
-    //    case objectProperty (property: String)
 }
 
 
 public enum FilterType<Model: Diffable> {
+    ///Filter using default method of protocol Filterable
+    case filterable
     ///Filter in memory using models
     case function (function: (Model) -> Bool)
+
+    var function: (Model) -> Bool {
+        switch self {
+        case .filterable:
+            return { $0.isIncluded() }
+        case .function(let function):
+            return function
+        }
+    }
 }
 
 
@@ -63,22 +91,34 @@ public enum SectionType {
 }
 
 
-public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionDataSourceProtocol {
+extension String: Diffable {}
 
-    typealias UpdateState = (diff: NestedDiff,
+
+public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProtocol {
+
+    typealias UpdateState = (changeSet: StagedChangeset<[ArraySection<String, Model>]>,
                              identifiers: [String],
+                             unfilteredIdentifiers: [String],
                              models: [Model],
                              sectionedItems: [String: SortedArray<Model>],
                              filteredItems: [String: SortedArray<Model>],
                              searchableItems: [String: SortedArray<Model>],
-                             filteredPaths: [Int: IndexPath],
-                             searchablePaths: [Int: IndexPath])
+                             filteredPaths: [Int: IndexPath])
+
+    typealias SearchUpdateState = (changeSet: StagedChangeset<[Model]>?, foundObjects: SortedArray<Model>)
 
     public var searchString: String? {
         didSet {
             self.lazySearch()
         }
     }
+
+    public var searchType: SearchType<Model> {
+        didSet {
+            self.lazySearch()
+        }
+    }
+
 
     public var filterType: FilterType<Model>? {
         didSet {
@@ -92,8 +132,19 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         }
     }
 
+    public var sectionFunction: (Model) -> [String] {
+        didSet {
+            self.lazyForceUpdate()
+        }
+    }
+    public var sectionType: SectionType {
+        didSet {
+            self.lazyForceUpdate()
+        }
+    }
+
     public var allItems: [Model] {
-        return self.models
+        self.models
     }
 
     public private(set) var isSearching: Bool = false {
@@ -111,7 +162,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
     public var searchInterval: TimeInterval = 0.4 {
         didSet {
             self.lazySearch = {
-                return SectionDataSource.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
+                SectionDataSource.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
                     [weak self] in
                     self?.recalculateSearch(string: self?.searchString)
                 }
@@ -136,33 +187,37 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
     public internal (set) var operationIndex: OperationIndex = 0
 
     fileprivate lazy var lazyUpdate: () -> Void = {
-        return SectionDataSource.debounce(delayBy: .milliseconds(100)) {
+        SectionDataSource.debounce(delayBy: .milliseconds(100)) {
             [weak self] in
             self?.recalculate()
         }
     }()
 
+    fileprivate lazy var lazyForceUpdate: () -> Void = {
+        SectionDataSource.debounce(delayBy: .milliseconds(100)) {
+            [weak self] in
+            self?.recalculate(force: true)
+        }
+    }()
+
     fileprivate lazy var lazySortUpdate: () -> Void = {
-        return SectionDataSource.debounce(delayBy: .milliseconds(100)) {
+        SectionDataSource.debounce(delayBy: .milliseconds(100)) {
             [weak self] in
             self?.recalculate(updateSorting: true)
         }
     }()
 
     fileprivate lazy var lazySearch: () -> Void = {
-        return SectionDataSource.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
+        SectionDataSource.debounce(delayBy: .milliseconds(Int(self.searchInterval * 1000))) {
             [weak self] in
             self?.recalculateSearch(string: self?.searchString)
         }
     }()
 
-    fileprivate let sectionFunction: (Model) -> (String)
-    fileprivate let searchType: SearchType<Model>
-    fileprivate let sectionType: SectionType
-
     var models: [Model]
 
     var identifiers = [String]()
+    var unfilteredIdentifiers = [String]()
     var foundObjects: SortedArray<Model>
 
     var sectionedItems = [String: SortedArray<Model>]()
@@ -170,8 +225,6 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
     var searchableSectionedItems = [String: SortedArray<Model>]()
 
     var filteredIndexPaths = [Int: IndexPath]()
-    var searchableIndexPaths = [Int: IndexPath]()
-
 
     fileprivate(set) var initialized = false
 
@@ -180,7 +233,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
     fileprivate let workQueue = DispatchQueue(label: "mm.sectionDataSource.dataSourceWorkQueue", qos: .utility)
 
     public init(initialItems: [Model] = [Model](),
-                sectionFunction: @escaping (Model) -> (String),
+                sectionFunction: @escaping (Model) -> [String],
                 sectionType: SectionType = .sorting(function: <),
                 sortType: SortType<Model>,
                 filterType: FilterType<Model>? = nil,
@@ -203,7 +256,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         self.setupSections()
     }
 
-    func execute<T>(work: @escaping () -> (T), completion: ((T) -> ())? = nil) {
+    func execute<T>(work: @escaping () -> T, completion: ((T) -> ())? = nil) {
         if async {
             workQueue.async {
                 let val: T = work()
@@ -217,7 +270,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         }
     }
 
-    class func debounce(delayBy: DispatchTimeInterval, queue: DispatchQueue = .main, _ function: @escaping (() -> Void)) -> () -> Void {
+    class func debounce(delayBy: DispatchTimeInterval, queue: DispatchQueue = .main, _ function: @escaping () -> Void) -> () -> Void {
         var currentWorkItem: DispatchWorkItem?
         return {
             currentWorkItem?.cancel()
@@ -234,13 +287,13 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         self.delegate?.dataSource(self, didUpdateSearchContent: updates)
     }
 
-    func recalculate(updateSorting: Bool = false) {
+    func recalculate(updateSorting: Bool = false, force: Bool = false) {
         operationIndex += 1
         let currentOperationIndex = operationIndex
 
         let work = {
             () -> UpdateState in
-            if updateSorting && self.limit != nil {
+            if (updateSorting && self.limit != nil) || force {
                 return self.update(for: self.models)
             } else {
                 return self.updateLimit(updateSorting: updateSorting)
@@ -250,9 +303,8 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         let completion = {
             (updateState: UpdateState) in
 
-            self.update(from: updateState)
-
-            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff), operationIndex: currentOperationIndex)
+            let steps: OrderedChangeSteps = self.prepareChangeSteps(for: updateState)
+            self.invokeDelegateUpdate(updates: .update(changes: steps), operationIndex: currentOperationIndex)
 
             if self.isSearching {
                 self.lazySearch()
@@ -279,38 +331,52 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         self.isSearching = true
 
         let work = {
-            () -> DataSourceUpdates in
+            () -> SearchUpdateState in
             let found = query.isEmpty ? [Model]() : self.searchObjects(query)
 
-            let previouslyFound = self.foundObjects.array
-            self.foundObjects = SortedArray(sorted: found, areInIncreasingOrder: self.sortType.function)
+            let foundObjects = SortedArray(sorted: found, areInIncreasingOrder: self.sortType.function)
+
+            let changeSet: StagedChangeset<[Model]>?
+            if alreadySearching {
+                changeSet = StagedChangeset(source: self.foundObjects.sortedElements, target: foundObjects.sortedElements)
+            } else {
+                changeSet = nil
+            }
+
+            return (changeSet, foundObjects)
+        }
+        let completion = {
+            (updateState: SearchUpdateState) -> Void in
 
             let updates: DataSourceUpdates
-
-            if alreadySearching {
-                let steps = self.foundObjects.array.difference(from: previouslyFound)
-                updates = .update(changes: ArrayDiff(diffSteps: steps))
+            let steps = self.prepareSearchChangeSteps(for: updateState)
+            if alreadySearching, let steps = steps {
+                updates = .update(changes: steps)
             } else {
                 updates = .reload
             }
 
-            return updates
-        }
-        let completion = {
-            (updates: DataSourceUpdates) -> Void in
             self.invokeSearchDelegateUpdate(updates: updates)
         }
         self.execute(work: work, completion: completion)
     }
 
-    func update(from updateState: UpdateState) {
+    func updateInitial(from updateState: UpdateState) {
+        self.models = updateState.models
+        self.unfilteredIdentifiers = updateState.unfilteredIdentifiers
+        self.sectionedItems = updateState.sectionedItems
+        self.searchableSectionedItems = updateState.searchableItems
+        self.filteredIndexPaths = updateState.filteredPaths
+    }
+
+    func updateFinal(from updateState: UpdateState) {
         self.models = updateState.models
         self.identifiers = updateState.identifiers
+        self.unfilteredIdentifiers = updateState.unfilteredIdentifiers
         self.sectionedItems = updateState.sectionedItems
         self.filteredSectionedItems = updateState.filteredItems
         self.searchableSectionedItems = updateState.searchableItems
         self.filteredIndexPaths = updateState.filteredPaths
-        self.searchableIndexPaths = updateState.searchablePaths
     }
 
     func setupSections() {
@@ -320,20 +386,16 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             () -> UpdateState in
             let updateState = self.update(for: self.models)
 
-            self.update(from: updateState)
-
             return updateState
         }
 
         let completion = {
-            (_: UpdateState) in
+            (updateState: UpdateState) in
+
             self.initialized = true
 
-            let insertions: Array<Int> = self.identifiers.count > 0 ? Array(0..<self.identifiers.count) : [Int]()
-
-            let nestedDiff = NestedDiff(sectionsDiffSteps: ArrayDiff(inserts: insertions), itemsDiffSteps: [], oldItemDiffSteps: [])
-
-            self.invokeDelegateUpdate(updates: .initial(changes: nestedDiff), operationIndex: currentOperationIndex)
+            let steps: OrderedChangeSteps = self.prepareChangeSteps(for: updateState)
+            self.invokeDelegateUpdate(updates: .initial(changes: steps), operationIndex: currentOperationIndex)
         }
 
         execute(work: work, completion: completion)
@@ -353,9 +415,8 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         let completion: (UpdateState) -> () = {
             updateState in
 
-            self.update(from: updateState)
-
-            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff), operationIndex: currentOperationIndex)
+            let steps: OrderedChangeSteps = self.prepareChangeSteps(for: updateState)
+            self.invokeDelegateUpdate(updates: .update(changes: steps), operationIndex: currentOperationIndex)
 
             if self.isSearching {
                 self.lazySearch()
@@ -375,61 +436,41 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
     }
 
     @discardableResult
-    public func update(with diff: [DiffStep<Model>]) -> OperationIndex {
+    public func add(items: [Model]) -> OperationIndex {
+        var newModels = self.models
+        newModels.append(contentsOf: items)
+        return self.update(items: newModels)
+    }
 
-        operationIndex += 1
-        let currentOperationIndex = operationIndex
+    public func forceUpdate() -> OperationIndex {
+        self.recalculate(force: true)
 
-        let work: () -> UpdateState? = {
-            guard let newModels = try? self.models.apply(steps: diff) else {
-                return nil
-            }
-
-            let updateState = self.update(for: newModels)
-            return updateState
-        }
-
-        let completion: (UpdateState?) -> () = {
-            updateState in
-            guard let updateState = updateState else {
-                return
-            }
-
-            self.update(from: updateState)
-
-            self.invokeDelegateUpdate(updates: .updateSections(changes: updateState.diff), operationIndex: currentOperationIndex)
-
-            if self.isSearching {
-                self.lazySearch()
-            }
-        }
-
-        self.execute(work: work, completion: completion)
-
-        return currentOperationIndex
+        return operationIndex
     }
 
     func update(for newModels: [Model]) -> UpdateState {
 
-        var newIdentifiers = self.sectionType.prefilled ?? [String]()
-        var unsortedItems = Dictionary(uniqueKeysWithValues: newIdentifiers.map { ($0, [Model]()) })
+        var newUnfilteredIdentifiers = self.sectionType.prefilled ?? [String]()
+        var newIdentifiers = newUnfilteredIdentifiers
+        var unsortedItems = Dictionary(uniqueKeysWithValues: newUnfilteredIdentifiers.map { ($0, [Model]()) })
         var newSectionItems = [String: SortedArray<Model>]()
         var newFilteredItems = [String: SortedArray<Model>]()
         var newSearchableItems = [String: SortedArray<Model>]()
         var newFilteredPaths = [Int: IndexPath]()
-        var newSearchablePaths = [Int: IndexPath]()
 
         for model in newModels {
 
-            let section = self.sectionFunction(model)
+            let sections = self.sectionFunction(model)
 
-            let sectionItems = unsortedItems[section]
+            for section in sections {
+                let sectionItems = unsortedItems[section]
 
-            if self.sectionType.prefilled == nil, sectionItems == nil {
-                newIdentifiers.append(section)
-                unsortedItems[section] = [model]
-            } else {
-                unsortedItems[section]?.append(model)
+                if self.sectionType.prefilled == nil, sectionItems == nil {
+                    newUnfilteredIdentifiers.append(section)
+                    unsortedItems[section] = [model]
+                } else {
+                    unsortedItems[section]?.append(model)
+                }
             }
         }
 
@@ -437,10 +478,10 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         case .prefilled:
             break
         case .sorting(let function):
-            newIdentifiers.sort(by: function)
+            newUnfilteredIdentifiers.sort(by: function)
         }
 
-        for section in newIdentifiers {
+        for section in newUnfilteredIdentifiers {
             guard let items = unsortedItems[section] else {
                 newSectionItems[section] = SortedArray(sorted: [], areInIncreasingOrder: self.sortType.function)
                 continue
@@ -448,24 +489,18 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             switch self.sortType {
             case .unsorted:
                 newSectionItems[section] = SortedArray(sorted: items, areInIncreasingOrder: self.sortType.function)
-            case .function:
+            case .function, .comparable:
                 newSectionItems[section] = SortedArray(unsorted: items, areInIncreasingOrder: self.sortType.function)
             }
         }
 
-        var itemDiffs: [ArrayDiff] = Array(repeating: ArrayDiff(), count: newIdentifiers.count)
-        var oldItemDiffs: [ArrayDiff] = Array(repeating: ArrayDiff(), count: self.identifiers.count)
-
-        let oldIdentifierIndexes: [String: Int] = Dictionary(self.identifiers.enumerated().map { ($0.element, $0.offset) },
-                                                             uniquingKeysWith: { _, second in second })
-
-        for (index, identifier) in newIdentifiers.enumerated() {
+        for (index, identifier) in newUnfilteredIdentifiers.enumerated() {
 
             guard let new = newSectionItems[identifier] else {
                 continue
             }
 
-            var count = newIdentifiers.prefix(index).map { newFilteredItems[$0]?.count ?? 0 }.reduce(0, +)
+            var count = newUnfilteredIdentifiers.prefix(index).map { newFilteredItems[$0]?.count ?? 0 }.reduce(0, +)
             let limit = self.limit ?? Int.max
 
             var searchable = [Model]()
@@ -473,10 +508,9 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
             for model in new {
                 if self.filterModel(model) {
-                    newSearchablePaths[model.diffIdentifier.hashValue] = IndexPath(row: searchable.count, section: index)
                     searchable.append(model)
                     if count < limit {
-                        newFilteredPaths[model.diffIdentifier.hashValue] = IndexPath(row: filtered.count, section: index)
+                        newFilteredPaths[model.differenceIdentifier.hashValue] = IndexPath(item: filtered.count, section: index)
                         filtered.append(model)
                         count += 1
                     }
@@ -486,28 +520,33 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             let sorted = SortedArray(sorted: filtered, areInIncreasingOrder: self.sortType.function)
             newFilteredItems[identifier] = sorted
             newSearchableItems[identifier] = SortedArray(sorted: searchable, areInIncreasingOrder: self.sortType.function)
-
-            if let old = self.filteredSectionedItems[identifier] {
-                let steps = sorted.array.difference(from: old.array)
-                itemDiffs[index] = ArrayDiff(diffSteps: steps)
-                oldItemDiffs[oldIdentifierIndexes[identifier] ?? 0] = ArrayDiff(diffSteps: steps)
-            }
         }
-
-        let sectionDiff: ArrayDiff
 
         switch sectionType {
         case .prefilled:
-            sectionDiff = ArrayDiff()
+            break
         case .sorting:
-            newIdentifiers = newIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
-            let steps = newIdentifiers.difference(from: self.identifiers)
-            sectionDiff = ArrayDiff(diffSteps: steps)
+            newIdentifiers = newUnfilteredIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
         }
 
-        let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs, oldItemDiffSteps: oldItemDiffs)
+        let newCollection: [ArraySection<String, Model>] = newIdentifiers.map {
+            ArraySection(model: $0, elements: newFilteredItems[$0]?.sortedElements ?? [])
+        }
 
-        return (nestedDiff, newIdentifiers, newModels, newSectionItems, newFilteredItems, newSearchableItems, newFilteredPaths, newSearchablePaths)
+        let oldCollection: [ArraySection<String, Model>] = self.identifiers.map {
+            ArraySection(model: $0, elements: self.filteredSectionedItems[$0]?.sortedElements ?? [])
+        }
+
+        let changeSet = StagedChangeset(source: oldCollection, target: newCollection)
+
+        return (changeSet,
+                newIdentifiers,
+                newUnfilteredIdentifiers,
+                newModels,
+                newSectionItems,
+                newFilteredItems,
+                newSearchableItems,
+                newFilteredPaths)
     }
 
     public func loadMoreData() -> OperationIndex {
@@ -517,21 +556,15 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
     func updateLimit(updateSorting: Bool = false) -> UpdateState {
 
-        let sectionDiff = ArrayDiff()
-
-        var itemDiffs: [ArrayDiff] = Array(repeating: ArrayDiff(), count: self.sectionedItems.count)
-
         var count = 0
         let limit = self.limit ?? Int.max
 
         var newFilteredItems = [String: SortedArray<Model>]()
         var newSearchableItems = [String: SortedArray<Model>]()
         var newFilteredPaths = [Int: IndexPath]()
-        var newSearchablePaths = [Int: IndexPath]()
 
-        for (index, identifier) in self.identifiers.enumerated() {
-            guard let items = self.sectionedItems[identifier],
-                  let oldModels = self.filteredSectionedItems[identifier] else {
+        for (index, identifier) in self.unfilteredIdentifiers.enumerated() {
+            guard let items = self.sectionedItems[identifier] else {
                 continue
             }
 
@@ -541,11 +574,10 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
             items.forEach({
                 model in
                 if self.filterModel(model) {
-                    newSearchablePaths[model.diffIdentifier.hashValue] = IndexPath(row: searchable.count, section: index)
                     searchable.append(model)
 
                     if count < limit {
-                        newFilteredPaths[model.diffIdentifier.hashValue] = IndexPath(row: filtered.count, section: index)
+                        newFilteredPaths[model.differenceIdentifier.hashValue] = IndexPath(item: filtered.count, section: index)
                         filtered.append(model)
                         count += 1
                     }
@@ -564,22 +596,28 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
 
             newFilteredItems[identifier] = sorted
             newSearchableItems[identifier] = searchableSorted
-
-            let steps = sorted.array.difference(from: oldModels.array)
-
-            itemDiffs[self.identifiers.firstIndex(of: identifier)!] = ArrayDiff(diffSteps: steps)
         }
 
-        let nestedDiff = NestedDiff(sectionsDiffSteps: sectionDiff, itemsDiffSteps: itemDiffs, oldItemDiffSteps: itemDiffs)
+        let newIdentifiers = self.unfilteredIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
 
-        return (nestedDiff,
-                self.identifiers,
+        let newCollection: [ArraySection<String, Model>] = newIdentifiers.map {
+            ArraySection(model: $0, elements: newFilteredItems[$0]?.sortedElements ?? [])
+        }
+
+        let oldCollection: [ArraySection<String, Model>] = self.identifiers.map {
+            ArraySection(model: $0, elements: self.filteredSectionedItems[$0]?.sortedElements ?? [])
+        }
+
+        let changeSet = StagedChangeset(source: oldCollection, target: newCollection)
+
+        return (changeSet,
+                newIdentifiers,
+                self.unfilteredIdentifiers,
                 self.models,
                 self.sectionedItems,
                 newFilteredItems,
                 newSearchableItems,
-                newFilteredPaths,
-                newSearchablePaths)
+                newFilteredPaths)
     }
 
     func searchObjects(_ query: String) -> [Model] {
@@ -589,7 +627,7 @@ public class SectionDataSource<Model: Diffable & Searchable>: NSObject, SectionD
         for identifier in identifiers {
             let models = self.searchableSectionedItems[identifier]
             if let m = models {
-                let a = self.searchModels(m.array, query: query)
+                let a = self.searchModels(m.sortedElements, query: query)
                 found += a
             }
         }
@@ -612,7 +650,7 @@ public extension SectionDataSource {
         let identifier = identifiers[section]
         let items = filteredSectionedItems[identifier]!
 
-        return items.array
+        return items.sortedElements
     }
 
     func itemAtIndexPath(_ path: IndexPath) -> Model {
@@ -627,7 +665,7 @@ public extension SectionDataSource {
         guard self.initialized else {
             return nil
         }
-        return self.filteredIndexPaths[item.diffIdentifier.hashValue]
+        return self.filteredIndexPaths[item.differenceIdentifier.hashValue]
     }
 
     func numberOfItemsInSection(_ section: Int) -> Int {
@@ -664,19 +702,19 @@ public extension SectionDataSource {
 public extension SectionDataSource {
 
     func searchedItemsInSection(_ section: Int) -> [Model] {
-        return self.foundObjects.array
+        self.foundObjects.sortedElements
     }
 
     func searchedItemAtIndexPath(_ path: IndexPath) -> Model {
-        return self.foundObjects[path.row]
+        self.foundObjects[path.row]
     }
 
     func searchedIndexPath(for item: Model) -> IndexPath? {
-        return self.searchableIndexPaths[item.diffIdentifier.hashValue]
+        self.foundObjects.firstIndex(of: item).flatMap { IndexPath(item: $0, section: 0) }
     }
 
     func searchedNumberOfItemsInSection(_ section: Int) -> Int {
-        return self.foundObjects.count
+        self.foundObjects.count
     }
 
     func searchedNumberOfSections() -> Int {
@@ -687,7 +725,7 @@ public extension SectionDataSource {
     }
 
     func searchedSectionIdForSection(_ section: Int) -> String {
-        return SearchSection
+        SearchSection
     }
 }
 
@@ -702,8 +740,8 @@ extension SectionDataSource {
         switch self.sortType {
         case .unsorted:
             return unsorted
-        case .function(let function):
-            return unsorted.sorted(by: function)
+        case .comparable, .function:
+            return unsorted.sorted(by: self.sortType.function)
         }
     }
 
@@ -713,8 +751,8 @@ extension SectionDataSource {
         }
 
         switch filter {
-        case let .function(function):
-            return function(unfiltered)
+        case .function, .filterable:
+            return filter.function(unfiltered)
         }
     }
 
@@ -728,6 +766,77 @@ extension SectionDataSource {
         case .function(let function):
             return list.filter { function($0, query) }
         }
+    }
+}
+
+
+extension SectionDataSource {
+    func prepareChangeSteps(for updateState: UpdateState) -> OrderedChangeSteps {
+        self.updateInitial(from: updateState)
+        let steps: [ChangeStep] = updateState.changeSet.enumerated().map { (offset, changeSet) in
+            let update: () -> Void
+            if offset == updateState.changeSet.endIndex - 1 {
+                update = { [weak self] in
+                    self?.updateFinal(from: updateState)
+                }
+            } else {
+                update = { [weak self] in
+                    guard let self = self else { return }
+                    self.identifiers = changeSet.data.map { $0.model }
+                    self.filteredSectionedItems = Dictionary(uniqueKeysWithValues: changeSet.data.map {
+                        ($0.model, SortedArray(sorted: $0.elements, areInIncreasingOrder: self.sortType.function))
+                    })
+                }
+            }
+            return ChangeStep(dataSourceUpdate: update,
+                              sectionDeleted: changeSet.sectionDeleted,
+                              sectionInserted: changeSet.sectionInserted,
+                              sectionUpdated: changeSet.sectionUpdated,
+                              sectionMoved: changeSet.sectionMoved,
+                              elementDeleted: changeSet.elementDeleted.map { IndexPath(item: $0.element, section: $0.section) },
+                              elementInserted: changeSet.elementInserted.map { IndexPath(item: $0.element, section: $0.section) },
+                              elementUpdated: changeSet.elementUpdated.map { IndexPath(item: $0.element, section: $0.section) },
+                              elementMoved: changeSet.elementMoved.map {
+                                  (IndexPath(item: $0.element, section: $0.section),
+                                   IndexPath(item: $1.element, section: $1.section))
+                              })
+        }
+
+        return OrderedChangeSteps(steps: ContiguousArray(steps))
+    }
+
+    func prepareSearchChangeSteps(for updateState: SearchUpdateState) -> OrderedChangeSteps? {
+        guard let changeSets = updateState.changeSet else {
+            self.foundObjects = updateState.foundObjects
+            return nil
+        }
+        let steps: [ChangeStep] = changeSets.enumerated().map { (offset, changeSet) in
+            let update: () -> Void
+            if offset == changeSets.endIndex - 1 {
+                update = { [weak self] in
+                    self?.foundObjects = updateState.foundObjects
+                }
+            } else {
+                update = { [weak self] in
+                    guard let self = self else { return }
+                    self.foundObjects = SortedArray(sorted: changeSet.data, areInIncreasingOrder: self.sortType.function)
+                }
+            }
+            return ChangeStep(dataSourceUpdate: update,
+                              sectionDeleted: changeSet.sectionDeleted,
+                              sectionInserted: changeSet.sectionInserted,
+                              sectionUpdated: changeSet.sectionUpdated,
+                              sectionMoved: changeSet.sectionMoved,
+                              elementDeleted: changeSet.elementDeleted.map { IndexPath(item: $0.element, section: $0.section) },
+                              elementInserted: changeSet.elementInserted.map { IndexPath(item: $0.element, section: $0.section) },
+                              elementUpdated: changeSet.elementUpdated.map { IndexPath(item: $0.element, section: $0.section) },
+                              elementMoved: changeSet.elementMoved.map {
+                                  (IndexPath(item: $0.element, section: $0.section),
+                                   IndexPath(item: $1.element, section: $1.section))
+                              })
+        }
+
+        return OrderedChangeSteps(steps: ContiguousArray(steps))
     }
 }
 

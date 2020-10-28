@@ -2,18 +2,17 @@
 // Created by Mikhail Mulyar on 25/09/2017.
 //
 
-import PHDiff
 import CoreData
 
 
-public class FetchedResultsDataSource<Model: NSFetchRequestResult & Diffable & Searchable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
+public class FetchedResultsDataSource<Model: NSFetchRequestResult & Diffable>: SimpleDataSource<Model>, NSFetchedResultsControllerDelegate {
 
     public var ignoreFetchedResultsChanges = false
     public var forceObjectUpdatesFromController = false
 
     public var fetchRequest: NSFetchRequest<Model> {
         get {
-            return backingController.fetchRequest
+            backingController.fetchRequest
         }
         set {
             if fetchRequest.isEqual(newValue) || self.initialized == false {
@@ -34,7 +33,7 @@ public class FetchedResultsDataSource<Model: NSFetchRequestResult & Diffable & S
 
     public var managedObjectContext: NSManagedObjectContext {
         get {
-            return backingController.managedObjectContext
+            backingController.managedObjectContext
         }
         set {
             if managedObjectContext.isEqual(newValue) || self.initialized == false {
@@ -107,10 +106,18 @@ public class FetchedResultsDataSource<Model: NSFetchRequestResult & Diffable & S
         }
 
         if self.itemsForForceUpdates.isEmpty == false {
-            let indexes = self.itemsForForceUpdates.compactMap { self.indexPath(for: $0)?.row }.map { ($0, $0) }
-            let diff = ArrayDiff(inserts: [], deletes: [], moves: [], updates: indexes)
+            let paths = self.itemsForForceUpdates.compactMap { self.indexPath(for: $0) }
             operationIndex += 1
-            self.invokeDelegateUpdate(updates: .updateSections(changes: NestedDiff(sectionsDiffSteps: ArrayDiff(), itemsDiffSteps: [diff], oldItemDiffSteps: [diff])), operationIndex: operationIndex)
+            self.invokeDelegateUpdate(updates: .update(changes: OrderedChangeSteps(steps: [ChangeStep(dataSourceUpdate: {},
+                                                                                                              sectionDeleted: [],
+                                                                                                              sectionInserted: [],
+                                                                                                              sectionUpdated: [],
+                                                                                                              sectionMoved: [],
+                                                                                                              elementDeleted: [],
+                                                                                                              elementInserted: [],
+                                                                                                              elementUpdated: paths,
+                                                                                                              elementMoved: [])])),
+                                      operationIndex: operationIndex)
             self.itemsForForceUpdates.removeAll()
         }
 

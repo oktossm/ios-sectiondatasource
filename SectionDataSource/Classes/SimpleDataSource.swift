@@ -2,10 +2,8 @@
 // Created by Mikhail Mulyar on 24/09/2017.
 //
 
-import PHDiff
-
-
-public class SimpleDataSource<Model: Diffable & Searchable>: SectionDataSource<Model> {
+// Flat data source with only 1 section
+public class SimpleDataSource<Model: Diffable>: SectionDataSource<Model> {
 
     public init(initialItems: [Model] = [Model](),
                 sortType: SortType<Model>,
@@ -14,34 +12,12 @@ public class SimpleDataSource<Model: Diffable & Searchable>: SectionDataSource<M
                 async: Bool = true) {
 
         super.init(initialItems: initialItems,
-                   sectionFunction: { _ in return "_" },
+                   sectionFunction: { _ in ["_"] },
                    sectionType: .prefilled(sections: ["_"]),
                    sortType: sortType,
                    filterType: filterType,
                    searchType: searchType,
                    async: async)
-    }
-
-    func flatUpdates(updates: DataSourceUpdates) -> DataSourceUpdates {
-        switch updates {
-        case .initial:
-            return updates
-        case .updateSections(let changes):
-            if !changes.sectionsDiffSteps.isEmpty {
-                return .reload
-            }
-            if let updates = changes.itemsDiffSteps.first {
-                return .update(changes: updates)
-            } else {
-                return .update(changes: ArrayDiff(updates: []))
-            }
-        default:
-            return .reload
-        }
-    }
-
-    override func invokeDelegateUpdate(updates: DataSourceUpdates, operationIndex: Int) {
-        super.invokeDelegateUpdate(updates: flatUpdates(updates: updates), operationIndex: operationIndex)
     }
 
     public func items() -> [Model] {

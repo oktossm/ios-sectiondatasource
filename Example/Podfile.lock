@@ -1,20 +1,18 @@
 PODS:
+  - DifferenceKit/Core (1.1.5)
+  - DifferenceKit/UIKitExtension (1.1.5):
+    - DifferenceKit/Core
   - Hue (5.0.0)
-  - PHDiff (1.1.1)
-  - SectionDataSource (0.11.2):
-    - PHDiff
-    - SortedArray (~> 0.3.1)
-  - SortedArray (0.3.1)
+  - SectionDataSource (0.12.0):
+    - DifferenceKit/UIKitExtension
 
 DEPENDENCIES:
   - Hue
   - SectionDataSource (from `../`)
 
 SPEC REPOS:
-  https://bitbucket.org/mmulyar/mmpods.git:
-    - PHDiff
-    - SortedArray
   https://github.com/CocoaPods/Specs.git:
+    - DifferenceKit
     - Hue
 
 EXTERNAL SOURCES:
@@ -22,11 +20,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
+  DifferenceKit: 516f12e336ed65a3a0665847b5c3cb5cad4bd4ea
   Hue: c129cb67be7d093a82bbbc30ce8a96757bf6f37a
-  PHDiff: e184f0c80747c396490cc41aa6fb8b455639ae15
-  SectionDataSource: cb391432aa9474688ad0e5cabae8de84ee39e3e3
-  SortedArray: fd51876b3665d6ec56f3de960d3c00408a962b59
+  SectionDataSource: eadbbc5c6f09ee764e2a08087e6889e4ad479cd5
 
 PODFILE CHECKSUM: 6f864d0dd046822c80cfc5c1dfcd2272be25b9e4
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.3

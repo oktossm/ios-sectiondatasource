@@ -4,7 +4,10 @@
 //
 
 import Foundation
-import PHDiff
+import DifferenceKit
+
+
+public typealias Diffable = Differentiable & Searchable & Filterable
 
 
 public let SearchSection = "kSearchSection"
@@ -14,12 +17,14 @@ public typealias OperationIndex = Int
 
 public protocol SectionDataSourceProtocol {
 
-    associatedtype Model: Diffable, Searchable
+    associatedtype Model: Diffable
 
 
     // MARK: - Input
 
     var searchString: String? { get set }
+
+    var searchType: SearchType<Model> { get set }
 
     var filterType: FilterType<Model>? { get set }
 
@@ -30,6 +35,10 @@ public protocol SectionDataSourceProtocol {
     var limitStep: Int { get set }
 
     var limit: Int? { get set }
+
+    var sectionFunction: (Model) -> [String] { get set }
+
+    var sectionType: SectionType { get set }
 
 
     // MARK: - Delegate
@@ -46,7 +55,7 @@ public protocol SectionDataSourceProtocol {
     func add(item: Model) -> OperationIndex
 
     @discardableResult
-    func update(with diff: [DiffStep<Model>]) -> OperationIndex
+    func add(items: [Model]) -> OperationIndex
 
     @discardableResult
     func loadMoreData() -> OperationIndex

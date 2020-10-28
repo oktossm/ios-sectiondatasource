@@ -38,7 +38,7 @@ final class MockedSimpleDataSource<Model: Diffable & Searchable>: SimpleDataSour
     var searchContentExpectationBlock: ((DataSourceUpdates) -> Void)?
 
     override func invokeDelegateUpdate(updates: DataSourceUpdates, operationIndex: OperationIndex) {
-        self.contentExpectationBlock?(self.flatUpdates(updates: updates))
+        self.contentExpectationBlock?(updates)
     }
 
     override func invokeSearchDelegateUpdate(updates: DataSourceUpdates) {
@@ -173,7 +173,7 @@ final class Tests: XCTestCase {
             guard case .update(let changes) = updates,
                   let insert = changes.inserts.first,
                   insert == 0
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -201,7 +201,7 @@ final class Tests: XCTestCase {
                   changes.updates.count == 2,
                   changes.updates.contains(where: { $0.0 == $0.1 && $0.0 == 0 }),
                   changes.updates.contains(where: { $0.0 == $0.1 && $0.0 == 1 })
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -229,7 +229,7 @@ final class Tests: XCTestCase {
             guard case .update(let changes) = updates,
                   changes.deletes.count == 1,
                   changes.deletes.contains(where: { $0 == 0 })
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -256,7 +256,7 @@ final class Tests: XCTestCase {
 
             guard case .update(let changes) = updates,
                   changes.moves.count == 3
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -292,7 +292,7 @@ final class Tests: XCTestCase {
             guard case .update(let changes) = updates,
                   changes.deletes.count == 1,
                   changes.deletes.first == 1
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -325,7 +325,7 @@ final class Tests: XCTestCase {
                   changes.moves.count == 2,
                   let move = changes.moves.first,
                   (move.fromIndex == 2 && move.toIndex == 1) || (move.fromIndex == 1 && move.toIndex == 2)
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -357,7 +357,7 @@ final class Tests: XCTestCase {
                   changes.updates.first?.newIndex == 0,
                   changes.inserts.count == 1,
                   changes.inserts.first == 3
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -388,13 +388,13 @@ final class Tests: XCTestCase {
 
             if case .initial = updates { return }
 
-            guard case .updateSections(let changes) = updates,
+            guard case .update(let changes) = updates,
                   changes.sectionsDiffSteps.inserts.count == 1,
                   changes.sectionsDiffSteps.inserts.first == 2,
                   changes.sectionsDiffSteps.deletes.count == 1,
                   changes.sectionsDiffSteps.deletes.first == 2,
                   changes.itemsDiffSteps.count == 3
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -432,11 +432,11 @@ final class Tests: XCTestCase {
 
             if case .initial = updates { return }
 
-            guard case .updateSections(let changes) = updates,
+            guard case .update(let changes) = updates,
                   changes.sectionsDiffSteps.inserts.count == 0,
                   changes.sectionsDiffSteps.deletes.count == 0,
                   changes.sectionsDiffSteps.moves.count == 0
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -472,7 +472,7 @@ final class Tests: XCTestCase {
             guard case .reload = updates,
                   dataSource.searchedNumberOfItemsInSection(0) == 1,
                   dataSource.searchedItemAtIndexPath(IndexPath(row: 0, section: 0)) == TestModel(identifier: "a", value: "3")
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -503,7 +503,7 @@ final class Tests: XCTestCase {
                   changes.deletes.count == 1,
                   let insert = changes.inserts.first,
                   insert == 0
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -538,7 +538,7 @@ final class Tests: XCTestCase {
                   changes.deletes.count == 1,
                   let insert = changes.inserts.first,
                   insert == 0
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -626,7 +626,7 @@ final class Tests: XCTestCase {
                   changes.moves.filter({ $0.fromIndex != $0.toIndex }).count == 4,
                   changes.updates.count == 5,
                   changes.inserts.count == 4
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }
@@ -675,7 +675,7 @@ final class Tests: XCTestCase {
                   changes.moves.filter({ $0.fromIndex != $0.toIndex }).count == 4,
                   changes.updates.count == 5,
                   changes.inserts.count == 4
-                    else {
+                else {
                 XCTAssertTrue(false, "\(updates)")
                 return
             }

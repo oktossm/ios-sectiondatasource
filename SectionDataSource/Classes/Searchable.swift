@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import PHDiff
 
 
 public protocol Searchable {
@@ -14,6 +13,6 @@ public protocol Searchable {
 
 extension Searchable {
     public func pass(_ query: String) -> Bool {
-        return false
+        false
     }
 }
