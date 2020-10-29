@@ -24,6 +24,17 @@ public class OrderedChangeSteps: CustomDebugStringConvertible {
     public var debugDescription: String {
         String(describing: steps)
     }
+
+    public var customElementUpdate: (([IndexPath]) -> Void)? {
+        set {
+            for index in 0..<steps.count {
+                steps[index].customElementUpdate = newValue
+            }
+        }
+        get {
+            steps.first?.customElementUpdate
+        }
+    }
 }
 
 
