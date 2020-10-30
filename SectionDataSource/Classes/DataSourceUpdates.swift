@@ -21,6 +21,12 @@ public class OrderedChangeSteps: CustomDebugStringConvertible {
         return step
     }
 
+    // Forces data source update. You must call table/collection reloadData after forceUpdate().
+    public func forceUpdate() {
+        steps.last?.dataSourceUpdate()
+        steps.removeAll()
+    }
+
     public var debugDescription: String {
         String(describing: steps)
     }
