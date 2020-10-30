@@ -83,7 +83,7 @@ public extension UITableView {
 
             if !changeStep.elementUpdated.isEmpty {
                 if let customElementUpdate = changeStep.customElementUpdate {
-                    customElementUpdate(changeStep.elementUpdated)
+                    customElementUpdate(changeStep)
                 } else {
                     reloadRows(at: changeStep.elementUpdated, with: reloadRowsAnimation())
                 }
@@ -148,7 +148,7 @@ public extension UICollectionView {
 
             if !changeStep.elementUpdated.isEmpty {
                 if let customElementUpdate = changeStep.customElementUpdate {
-                    customElementUpdate(changeStep.elementUpdated)
+                    customElementUpdate(changeStep)
                 } else {
                     reloadItems(at: changeStep.elementUpdated)
                 }

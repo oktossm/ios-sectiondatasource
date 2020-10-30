@@ -25,7 +25,8 @@ public class OrderedChangeSteps: CustomDebugStringConvertible {
         String(describing: steps)
     }
 
-    public var customElementUpdate: (([IndexPath]) -> Void)? {
+    /// Closure for custom element updates. Called instead of reloading cells/rows if not nil
+    public var customElementUpdate: ((ChangeStep) -> Void)? {
         set {
             for index in 0..<steps.count {
                 steps[index].customElementUpdate = newValue
@@ -41,8 +42,8 @@ public class OrderedChangeSteps: CustomDebugStringConvertible {
 public struct ChangeStep {
     var dataSourceUpdate: () -> Void
 
-    /// Block for custom element updates
-    public var customElementUpdate: (([IndexPath]) -> Void)?
+    /// Closure for custom element updates. Called instead of reloading cells/rows if not nil
+    public var customElementUpdate: ((ChangeStep) -> Void)?
 
     /// The offsets of deleted sections.
     public var sectionDeleted: [Int]
