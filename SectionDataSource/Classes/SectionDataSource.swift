@@ -442,6 +442,54 @@ public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProt
         return self.update(items: newModels)
     }
 
+    @discardableResult
+    public func delete(item: Model) -> OperationIndex {
+        var newModels = self.models
+
+        if let index = newModels.firstIndex(where: { $0.differenceIdentifier == item.differenceIdentifier }) {
+            newModels.remove(at: index)
+        }
+
+        return self.update(items: newModels)
+    }
+
+    @discardableResult
+    public func delete(items: [Model]) -> OperationIndex {
+        var newModels = self.models
+
+        for item in items {
+            if let index = newModels.firstIndex(where: { $0.differenceIdentifier == item.differenceIdentifier }) {
+                newModels.remove(at: index)
+            }
+        }
+
+        return self.update(items: newModels)
+    }
+
+    @discardableResult
+    public func replace(item: Model) -> OperationIndex {
+        var newModels = self.models
+
+        if let index = newModels.firstIndex(where: { $0.differenceIdentifier == item.differenceIdentifier }) {
+            newModels.replaceSubrange(index..<(index + 1), with: [item])
+        }
+
+        return self.update(items: newModels)
+    }
+
+    @discardableResult
+    public func replace(items: [Model]) -> OperationIndex {
+        var newModels = self.models
+
+        for item in items {
+            if let index = newModels.firstIndex(where: { $0.differenceIdentifier == item.differenceIdentifier }) {
+                newModels.replaceSubrange(index..<(index + 1), with: [item])
+            }
+        }
+
+        return self.update(items: newModels)
+    }
+
     public func forceUpdate() -> OperationIndex {
         self.recalculate(force: true)
 
