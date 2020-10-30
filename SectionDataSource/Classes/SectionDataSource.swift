@@ -722,6 +722,11 @@ public extension SectionDataSource {
             return 0
         }
 
+        // For SimpleDataSource support as it might request numberOfItemsInSection() without asking numberOfSections()
+        guard identifiers.count > section else {
+            return 0
+        }
+
         let identifier = identifiers[section]
         let items = filteredSectionedItems[identifier]
 
@@ -738,6 +743,13 @@ public extension SectionDataSource {
     }
 
     func sectionIdForSection(_ section: Int) -> String {
+        guard self.initialized else {
+            fatalError("Data source not initialized yet")
+        }
+        guard identifiers.count > section else {
+            fatalError("Section does not exist")
+        }
+
         let identifier = identifiers[section]
         return identifier
     }
