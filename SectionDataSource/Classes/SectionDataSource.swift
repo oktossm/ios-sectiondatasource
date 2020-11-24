@@ -680,6 +680,8 @@ public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProt
             }
         }
 
+        found.removeDuplicates()
+
         guard let limit = self.searchLimit else {
             return found
         }
@@ -911,5 +913,20 @@ extension RangeReplaceableCollection where Iterator.Element: Equatable {
         if let index = self.firstIndex(of: object) {
             self.remove(at: index)
         }
+    }
+}
+
+
+extension Array where Element: Diffable {
+    func removingDuplicates() -> [Element] {
+        var addedDict = [Element.DifferenceIdentifier: Bool]()
+
+        return filter {
+            addedDict.updateValue(true, forKey: $0.differenceIdentifier) == nil
+        }
+    }
+
+    mutating func removeDuplicates() {
+        self = self.removingDuplicates()
     }
 }
