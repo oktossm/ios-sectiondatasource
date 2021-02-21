@@ -73,7 +73,11 @@ public enum SectionType {
     ///Prefilled list of sections. Static sections list, will not change.
     case prefilled(sections: [String])
     ///Sorting algorithm for sections. Sections will be generated dynamically for items.
+    ///Sections which have 0 items will not be displayed in list.
     case sorting (function: (String, String) -> Bool)
+    ///Same as `sorting`. But it keeps sections with 0 items in list after filtering applied.
+    ///It is useful in case of implementing collapsable sections using internal filter.
+    case collapsableSorting (function: (String, String) -> Bool)
 
     var prefilled: [String]? {
         if case .prefilled(let sections) = self {
@@ -84,6 +88,9 @@ public enum SectionType {
 
     var sortingFunction: ((String, String) -> Bool)? {
         if case .sorting(let function) = self {
+            return function
+        }
+        if case .collapsableSorting(let function) = self {
             return function
         }
         return nil
@@ -525,7 +532,7 @@ public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProt
         switch sectionType {
         case .prefilled:
             break
-        case .sorting(let function):
+        case .sorting(let function), .collapsableSorting(let function):
             newUnfilteredIdentifiers.sort(by: function)
         }
 
@@ -575,6 +582,8 @@ public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProt
             break
         case .sorting:
             newIdentifiers = newUnfilteredIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
+        case .collapsableSorting:
+            break
         }
 
         let newCollection: [ArraySection<String, Model>] = newIdentifiers.map {
