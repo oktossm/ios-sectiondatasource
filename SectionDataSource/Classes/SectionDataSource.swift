@@ -655,7 +655,16 @@ public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProt
             newSearchableItems[identifier] = searchableSorted
         }
 
-        let newIdentifiers = self.unfilteredIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
+        var newIdentifiers = self.unfilteredIdentifiers
+
+        switch sectionType {
+        case .prefilled:
+            break
+        case .sorting:
+            newIdentifiers = self.unfilteredIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
+        case .collapsableSorting:
+            break
+        }
 
         let newCollection: [ArraySection<String, Model>] = newIdentifiers.map {
             ArraySection(model: $0, elements: newFilteredItems[$0]?.sortedElements ?? [])
