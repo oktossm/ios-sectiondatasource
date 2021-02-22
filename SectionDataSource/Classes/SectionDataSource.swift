@@ -583,7 +583,7 @@ public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProt
         case .sorting:
             newIdentifiers = newUnfilteredIdentifiers.filter { (newFilteredItems[$0]?.count ?? 0) > 0 }
         case .collapsableSorting:
-            break
+            newIdentifiers = newUnfilteredIdentifiers
         }
 
         let newCollection: [ArraySection<String, Model>] = newIdentifiers.map {
