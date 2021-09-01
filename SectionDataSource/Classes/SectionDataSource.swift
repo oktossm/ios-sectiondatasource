@@ -513,19 +513,18 @@ public class SectionDataSource<Model: Diffable>: NSObject, SectionDataSourceProt
         var newSearchableItems = [String: SortedArray<Model>]()
         var newFilteredPaths = [Int: IndexPath]()
 
-        for model in newModels {
-
-            let sections = self.sectionFunction(model)
-
-            for section in sections {
-                let sectionItems = unsortedItems[section]
-
-                if self.sectionType.prefilled == nil, sectionItems == nil {
-                    newUnfilteredIdentifiers.append(section)
-                    unsortedItems[section] = [model]
-                } else {
-                    unsortedItems[section]?.append(model)
-                }
+        switch self.sectionType {
+        case .prefilled:
+            for section in newUnfilteredIdentifiers {
+                let models = newModels.filter { self.sectionFunction($0).contains(section) }
+                unsortedItems[section] = models
+            }
+        default:
+            let allSections = Set(newModels.map { self.sectionFunction($0) }.joined())
+            newUnfilteredIdentifiers = Array(allSections)
+            for section in allSections {
+                let models = newModels.filter { self.sectionFunction($0).contains(section) }
+                unsortedItems[section] = models
             }
         }
 

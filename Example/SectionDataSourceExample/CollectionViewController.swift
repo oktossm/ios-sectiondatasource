@@ -155,6 +155,33 @@ class CollectionViewController: UIViewController, UICollectionViewDataSource, UI
         benchmark(name: "50000", closure: {
             dataSource.update(items: new)
         })
+
+        (old, new) = generate(count: 10000, removeRange: 1000..<2000, addRange: 5000..<7000)
+        var sectionDataSource = SectionDataSource<String>(initialItems: old,
+                                                          sectionFunction: { [String($0.prefix(1))] },
+                                                          sortType: .function(function: { $0.differenceIdentifier < $1.differenceIdentifier }),
+                                                          async: false)
+        benchmark(name: "10000 Sectioned", closure: {
+            sectionDataSource.update(items: new)
+        })
+
+        (old, new) = generate(count: 20000, removeRange: 2000..<4000, addRange: 10000..<14000)
+        sectionDataSource = SectionDataSource<String>(initialItems: old,
+                                                      sectionFunction: { [String($0.prefix(1))] },
+                                                      sortType: .function(function: { $0.differenceIdentifier < $1.differenceIdentifier }),
+                                                      async: false)
+        benchmark(name: "20000 Sectioned", closure: {
+            sectionDataSource.update(items: new)
+        })
+
+        (old, new) = generate(count: 50000, removeRange: 5000..<10000, addRange: 10000..<15000)
+        sectionDataSource = SectionDataSource<String>(initialItems: old,
+                                                      sectionFunction: { [String($0.prefix(1))] },
+                                                      sortType: .function(function: { $0.differenceIdentifier < $1.differenceIdentifier }),
+                                                      async: false)
+        benchmark(name: "50000 Sectioned", closure: {
+            sectionDataSource.update(items: new)
+        })
     }
 
     private func benchmark(name: String, closure: () -> Void) {
@@ -209,7 +236,7 @@ final class RandomLabelView: UICollectionReusableView {
         }
     }
 
-    override required init?(coder: NSCoder) {
+    required init?(coder: NSCoder) {
         super.init(coder: coder)
 
         self.label.textColor = .darkText

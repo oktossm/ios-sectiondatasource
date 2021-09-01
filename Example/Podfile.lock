@@ -1,9 +1,9 @@
 PODS:
-  - DifferenceKit/Core (1.1.5)
-  - DifferenceKit/UIKitExtension (1.1.5):
+  - DifferenceKit/Core (1.2.0)
+  - DifferenceKit/UIKitExtension (1.2.0):
     - DifferenceKit/Core
   - Hue (5.0.0)
-  - SectionDataSource (0.12.0):
+  - SectionDataSource (0.12.1):
     - DifferenceKit/UIKitExtension
 
 DEPENDENCIES:
@@ -20,10 +20,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  DifferenceKit: 516f12e336ed65a3a0665847b5c3cb5cad4bd4ea
+  DifferenceKit: 5659c430bb7fe45876fa32ce5cba5d6167f0c805
   Hue: c129cb67be7d093a82bbbc30ce8a96757bf6f37a
-  SectionDataSource: eadbbc5c6f09ee764e2a08087e6889e4ad479cd5
+  SectionDataSource: 4c7088deb37893e3c2a211be4b874856adfbf5dc
 
 PODFILE CHECKSUM: 6f864d0dd046822c80cfc5c1dfcd2272be25b9e4
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.2
